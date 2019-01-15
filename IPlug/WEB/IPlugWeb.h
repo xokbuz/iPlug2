@@ -24,13 +24,10 @@ class IPlugWeb : public IPlugAPIBase
 {
 public:
   IPlugWeb(IPlugInstanceInfo instanceInfo, IPlugConfig config);
-  
+
   //IPlugWeb
   void RestoreStateFromIndexedDB(const char* fileName);
   void PersistStateToIndexedDB(const char* fileName);
-  
-  //IPlugAPIBase
-  EHost GetHost() override { return EHost::kHostWWW; }
 
   //IEditorDelegate  
   void SendParameterValueFromUI(int paramIdx, double value) override;
