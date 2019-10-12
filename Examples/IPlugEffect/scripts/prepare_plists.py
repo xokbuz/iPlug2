@@ -1,15 +1,13 @@
 #!/usr/bin/python
 
-# this script will create/update info plist files based on config.h and copy resources to the ~/Music/PLUG_NAME folder or the bundle depending on PLUG_SHARED_RESOURCES
+# this script will create/update info plist files based on config.h a
 
 kAudioUnitType_MusicDevice      = "aumu"
 kAudioUnitType_MusicEffect      = "aumf"
 kAudioUnitType_Effect           = "aufx"
 kAudioUnitType_MIDIProcessor    = "aumi"
 
-DONT_COPY = ("")
-
-import plistlib, os, datetime, fileinput, glob, sys, string, shutil
+import plistlib, os, sys, shutil
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 projectpath = os.path.abspath(os.path.join(scriptpath, os.pardir))

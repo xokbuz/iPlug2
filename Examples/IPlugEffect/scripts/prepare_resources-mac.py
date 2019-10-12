@@ -1,15 +1,8 @@
 #!/usr/bin/python
 
-# this script will create/update info plist files based on config.h and copy resources to the ~/Music/PLUG_NAME folder or the bundle depending on PLUG_SHARED_RESOURCES
+# this script will copy resources to the ~/Music/PLUG_NAME folder or the bundle depending on PLUG_SHARED_RESOURCES
 
-kAudioUnitType_MusicDevice      = "aumu"
-kAudioUnitType_MusicEffect      = "aumf"
-kAudioUnitType_Effect           = "aufx"
-kAudioUnitType_MIDIProcessor    = "aumi"
-
-DONT_COPY = ("")
-
-import plistlib, os, datetime, fileinput, glob, sys, string, shutil
+import os, sys, shutil
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 projectpath = os.path.abspath(os.path.join(scriptpath, os.pardir))
@@ -18,17 +11,10 @@ IPLUG2_ROOT = "../../.."
 
 sys.path.insert(0, os.path.join(os.getcwd(), IPLUG2_ROOT + '/scripts'))
 
-from parse_config import parse_config, parse_xcconfig
+from parse_config import parse_config
 
 def main():
   config = parse_config(projectpath)
-  xcconfig = parse_xcconfig(os.path.join(os.getcwd(), IPLUG2_ROOT +  '/common-mac.xcconfig'))
-
-  CFBundleGetInfoString = config['BUNDLE_NAME'] + " v" + config['FULL_VER_STR'] + " " + config['PLUG_COPYRIGHT_STR']
-  CFBundleVersion = config['FULL_VER_STR']
-  CFBundlePackageType = "BNDL"
-  CSResourcesFileMapped = True
-  LSMinimumSystemVersion = xcconfig['DEPLOYMENT_TARGET']
 
   print "Copying resources ..."
 
