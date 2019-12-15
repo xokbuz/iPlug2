@@ -66,7 +66,7 @@ IGraphicsD2D::Bitmap::Bitmap(ID2D1Bitmap* pD2DBitmap, int width, int height, int
 
 IGraphicsD2D::Bitmap::~Bitmap()
 {
-  //TODO: free the bitmap
+  GetBitmap()->Release();
 }
 
 class IGraphicsD2D::Font
