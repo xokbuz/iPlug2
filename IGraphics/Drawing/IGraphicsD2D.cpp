@@ -98,27 +98,29 @@ StaticStorage<IGraphicsD2D::Font> IGraphicsD2D::sFontCache;
 
 #pragma mark - Utilites
 
-static inline D2D1_BLEND_MODE D2DBlendMode(const IBlend* pBlend)
+static inline D2D1_COMPOSITE_MODE D2DBlendMode(const IBlend* pBlend)
 {
-  //if (!pBlend)
-  //{
-    return D2D1_BLEND_MODE_MULTIPLY;
-  //}
-  //switch (pBlend->mMethod)
-  //{
-  //case EBlend::Default:         // fall through
-  //case EBlend::Clobber:         // fall through
-  //case EBlend::SourceOver:      return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::SourceIn:        return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::SourceOut:       return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::SourceAtop:      return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::DestOver:        return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::DestIn:          return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::DestOut:         return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::DestAtop:        return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::Add:             return D2D1_BLEND_MODE_MULTIPLY;
-  //case EBlend::XOR:             return D2D1_BLEND_MODE_MULTIPLY;
-  //}
+  if (!pBlend)
+    return D2D1_COMPOSITE_MODE_SOURCE_OVER;
+  else
+  {
+    switch (pBlend->mMethod)
+    {
+    case EBlend::Default:         // fall through
+    case EBlend::Clobber:         // fall through
+    case EBlend::SourceOver:      return D2D1_COMPOSITE_MODE_SOURCE_OVER;
+    case EBlend::SourceIn:        return D2D1_COMPOSITE_MODE_SOURCE_IN;
+    case EBlend::SourceOut:       return D2D1_COMPOSITE_MODE_SOURCE_OUT;
+    case EBlend::SourceAtop:      return D2D1_COMPOSITE_MODE_SOURCE_ATOP;
+    case EBlend::DestOver:        return D2D1_COMPOSITE_MODE_DESTINATION_OVER;
+    case EBlend::DestIn:          return D2D1_COMPOSITE_MODE_DESTINATION_IN;
+    case EBlend::DestOut:         return D2D1_COMPOSITE_MODE_DESTINATION_OUT;
+    case EBlend::DestAtop:        return D2D1_COMPOSITE_MODE_DESTINATION_ATOP;
+    case EBlend::Add:             return D2D1_COMPOSITE_MODE_PLUS;
+    case EBlend::XOR:             return D2D1_COMPOSITE_MODE_XOR;
+    }
+
+  }
 }
 
 static inline D2D1_RECT_F D2DRect(const IRECT& bounds)
@@ -528,14 +530,14 @@ void IGraphicsD2D::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const 
 void IGraphicsD2D::DrawBitmap(const IBitmap& bitmap, const IRECT& dest, int srcX, int srcY, const IBlend* pBlend)
 {
   RenderCheck();
-  const D2D1_RECT_F srcRect = D2DRect({ static_cast<float>(srcX), static_cast<float>(srcY), static_cast<float>(srcX + bitmap.FW()), static_cast<float>(srcY + bitmap.FH()) });
-  const D2D1_RECT_F dstRect = D2DRect({ dest.L, dest.T, dest.L + static_cast<float>(bitmap.FW()), dest.T + static_cast<float>(bitmap.FH())});
+  const IRECT dstIRECT = { dest.L, dest.T, dest.L + static_cast<float>(bitmap.FW()), dest.T + static_cast<float>(bitmap.FH()) };
+  const IRECT srcIRECT = { static_cast<float>(srcX), static_cast<float>(srcY), static_cast<float>(srcX + bitmap.FW()), static_cast<float>(srcY + bitmap.FH()) };
+  const D2D1_RECT_F srcRect = D2DRect(srcIRECT.GetScaled(bitmap.GetDrawScale() * bitmap.GetScale()));
+  const D2D1_RECT_F dstRect = D2DRect(dstIRECT);
 
-  // get the bitmap status just to see
-  ID2D1Bitmap* b = bitmap.GetAPIBitmap()->GetBitmap();
-//  D2D1_SIZE_F size = b->GetSize();
-
-  mD2DDeviceContext->DrawBitmap(b, &dstRect, 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, & srcRect);
+  //mD2DDeviceContext->DrawBitmap(bitmap.GetAPIBitmap()->GetBitmap(), &dstRect, pBlend ? pBlend->mWeight : 0.f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, & srcRect);
+  const D2D1_POINT_2F destPt = D2D1::Point2F(dstIRECT.L, dstIRECT.T);
+  mD2DDeviceContext->DrawImage(bitmap.GetAPIBitmap()->GetBitmap(), &destPt, &srcRect, D2D1_INTERPOLATION_MODE_LINEAR, D2DBlendMode(pBlend));
 }
 
 IColor IGraphicsD2D::GetPoint(int x, int y)
