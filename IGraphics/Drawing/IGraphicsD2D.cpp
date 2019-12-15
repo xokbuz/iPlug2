@@ -343,7 +343,34 @@ void IGraphicsD2D::PathStroke(const IPattern& pattern, float thickness, const IS
     SafeRelease(&mPathSink);
   }
   RenderCheck();
-  mD2DDeviceContext->DrawGeometry(mPath, GetBrush(pattern), thickness);
+
+  D2D1_CAP_STYLE dashCap = D2D1_CAP_STYLE_FLAT;
+  D2D1_LINE_JOIN lineJoin = D2D1_LINE_JOIN_MITER;
+
+  if (options.mJoinOption == ELineJoin::Miter) lineJoin = D2D1_LINE_JOIN_MITER;
+  else if (options.mJoinOption == ELineJoin::Round) lineJoin = D2D1_LINE_JOIN_ROUND;
+  else if (options.mJoinOption == ELineJoin::Bevel) lineJoin = D2D1_LINE_JOIN_BEVEL;
+
+  if (options.mCapOption == ELineCap::Butt) dashCap = D2D1_CAP_STYLE_FLAT;
+  else if (options.mCapOption == ELineCap::Round) dashCap = D2D1_CAP_STYLE_ROUND;
+  else if (options.mCapOption == ELineCap::Square) dashCap = D2D1_CAP_STYLE_SQUARE;
+
+  ID2D1StrokeStyle* style;
+
+  HRESULT hr = mFactory->CreateStrokeStyle(
+    D2D1::StrokeStyleProperties(
+      dashCap,
+      dashCap,
+      dashCap,
+      lineJoin,
+      options.mMiterLimit,
+      D2D1_DASH_STYLE_CUSTOM,
+      0.0f),
+    options.mDash.GetArray(),
+    options.mDash.GetCount(),
+    &style);
+
+  mD2DDeviceContext->DrawGeometry(mPath, GetBrush(pattern), thickness, style);
 }
 
 void IGraphicsD2D::PathFill(const IPattern& pattern, const IFillOptions& options, const IBlend* pBlend)
