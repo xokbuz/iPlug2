@@ -343,7 +343,7 @@ void IGraphicsD2D::PathStroke(const IPattern& pattern, float thickness, const IS
     SafeRelease(&mPathSink);
   }
   RenderCheck();
-  mD2DDeviceContext->DrawGeometry(mPath, GetBrush(pattern.GetStop(0).mColor), thickness);
+  mD2DDeviceContext->DrawGeometry(mPath, GetBrush(pattern), thickness);
 }
 
 void IGraphicsD2D::PathFill(const IPattern& pattern, const IFillOptions& options, const IBlend* pBlend)
@@ -356,7 +356,7 @@ void IGraphicsD2D::PathFill(const IPattern& pattern, const IFillOptions& options
     SafeRelease(&mPathSink);
   }
   RenderCheck();
-  mD2DDeviceContext->FillGeometry(mPath, GetBrush(pattern.GetStop(0).mColor));
+  mD2DDeviceContext->FillGeometry(mPath, GetBrush(pattern));
 }
 
 void IGraphicsD2D::DrawLine(const IColor& color, float x1, float y1, float x2, float y2, const IBlend* pBlend, float thickness)
@@ -1152,14 +1152,85 @@ void IGraphicsD2D::D2DReleaseFactoryResources()
   SafeRelease(&mPath);
   SafeRelease(&mPathSink);
   SafeRelease(&mSolidBrush);
+  SafeRelease(&mLinearGradientBrush);
 }
 
 ID2D1Brush* IGraphicsD2D::GetBrush(const IColor& color)
 {
-  if (!mSolidBrush) // TODO:: only solid color support for now
+  if (!mSolidBrush)
     HRESULT hr = mD2DDeviceContext->CreateSolidColorBrush(D2DColor(color), &mSolidBrush);
   else
     mSolidBrush->SetColor(D2DColor(color));
+
+  return mSolidBrush;
+}
+
+ID2D1Brush* IGraphicsD2D::GetBrush(const IPattern& pattern)
+{
+  HRESULT hr;
+
+  if (pattern.mType == EPatternType::Solid || pattern.NStops() < 2)
+    return GetBrush(pattern.GetStop(0).mColor);
+  else if (pattern.mType == EPatternType::Linear)
+  {
+    ID2D1GradientStopCollection* pGradientStops = NULL;
+
+    std::vector<D2D1_GRADIENT_STOP> gradientStops;
+    for (int i = 0; i < pattern.NStops(); i++)
+    {
+      const IColorStop& stop = pattern.GetStop(i);
+      gradientStops.push_back(GradientStop(stop.mOffset, D2DColor(stop.mColor)));
+    }
+
+    D2D1_EXTEND_MODE extendMode = D2D1_EXTEND_MODE_CLAMP;
+
+    switch (pattern.mExtend)
+    {
+      case EPatternExtend::None: extendMode = D2D1_EXTEND_MODE_CLAMP; break;
+      case EPatternExtend::Reflect: extendMode = D2D1_EXTEND_MODE_MIRROR; break;
+      case EPatternExtend::Repeat: extendMode = D2D1_EXTEND_MODE_WRAP; break;
+      //case EPatternExtend::Pad: extendMode = D2D1_EXTEND_MODE_CLAMP; break; // TODO: not supported?
+      default: break;
+    }
+
+    hr = mD2DDeviceContext->CreateGradientStopCollection(
+      gradientStops.data(),
+      gradientStops.size(),
+      D2D1_GAMMA_2_2,
+      extendMode,
+      &pGradientStops
+    );
+
+
+    if (SUCCEEDED(hr))
+    {
+      double x1 = 0.0;
+      double y1 = 0.0;
+      double x2 = 0.0;
+      double y2 = 1.0;
+
+      IMatrix m = pattern.mTransform;
+      m.Invert();
+      m.TransformPoint(x1, y1);
+      m.TransformPoint(x2, y2);
+
+      if (mLinearGradientBrush)
+        SafeRelease(&mLinearGradientBrush);
+      //TODO: can we reuse the brush?
+
+      hr = mD2DDeviceContext->CreateLinearGradientBrush(
+        D2D1::LinearGradientBrushProperties(
+          D2D1::Point2F(x1, y1),
+          D2D1::Point2F(x2, y2)),
+        pGradientStops,
+        &mLinearGradientBrush
+      );
+      //TODO: error check?
+    }
+    //else TODO: error check?
+
+    return mLinearGradientBrush;
+  }
 
   return mSolidBrush;
 }

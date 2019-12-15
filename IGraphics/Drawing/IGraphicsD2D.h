@@ -195,11 +195,15 @@ private:
   ID2D1PathGeometry* mPath = nullptr;
   ID2D1GeometrySink* mPathSink = nullptr;
 
-  // Keep a single color brush 
+  // Keep a single brush TODO: is this sensible? 
   ID2D1SolidColorBrush* mSolidBrush = nullptr;
+  ID2D1LinearGradientBrush* mLinearGradientBrush = nullptr;
 
-  // brush creation support.  Will return a cached brush if possible.
+  // single color solid brush creation support.  Will return a cached brush if possible.
   ID2D1Brush* GetBrush(const IColor& color);
+
+  // pattern brush creation support.  Will return a cached brush if possible.
+  ID2D1Brush* GetBrush(const IPattern& pattern);
 
   // adds a series of points into a path in one call to Direct2D.
   // the array is packed floats of alternating x, y values.
