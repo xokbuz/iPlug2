@@ -48,7 +48,7 @@ public:
       g.DrawText(mText, name, r);
     };
 
-    g.StartLayer(this, mRECT);
+    //g.StartLayer(this, mRECT);
     drawBlendPic(g, nextCell(), EBlend::Default, "Default", alpha);
     drawBlendPic(g, nextCell(), EBlend::Clobber, "Clobber", alpha);
     drawBlendPic(g, nextCell(), EBlend::Add, "Add", alpha);
@@ -61,8 +61,8 @@ public:
     drawBlendPic(g, nextCell(), EBlend::DestIn, "Dst In", alpha);
     drawBlendPic(g, nextCell(), EBlend::DestOut, "Dst Out", alpha);
     drawBlendPic(g, nextCell(), EBlend::DestAtop, "Dst Atop", alpha);
-    mLayer = g.EndLayer();
-    g.DrawLayer(mLayer);
+    //mLayer = g.EndLayer();
+    //g.DrawLayer(mLayer);
   }
     
 private:
