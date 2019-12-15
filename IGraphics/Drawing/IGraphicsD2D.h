@@ -198,6 +198,7 @@ private:
   // Keep a single brush TODO: is this sensible? 
   ID2D1SolidColorBrush* mSolidBrush = nullptr;
   ID2D1LinearGradientBrush* mLinearGradientBrush = nullptr;
+  ID2D1RadialGradientBrush* mRadialGradientBrush = nullptr;
 
   // single color solid brush creation support.  Will return a cached brush if possible.
   ID2D1Brush* GetBrush(const IColor& color);
