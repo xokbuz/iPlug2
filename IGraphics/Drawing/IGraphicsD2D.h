@@ -201,10 +201,10 @@ private:
   ID2D1RadialGradientBrush* mRadialGradientBrush = nullptr;
 
   // single color solid brush creation support.  Will return a cached brush if possible.
-  ID2D1Brush* GetBrush(const IColor& color);
+  ID2D1Brush* GetBrush(const IColor& color, const IBlend* pBlend = nullptr);
 
   // pattern brush creation support.  Will return a cached brush if possible.
-  ID2D1Brush* GetBrush(const IPattern& pattern);
+  ID2D1Brush* GetBrush(const IPattern& pattern, const IBlend* pBlend = nullptr);
 
   // adds a series of points into a path in one call to Direct2D.
   // the array is packed floats of alternating x, y values.

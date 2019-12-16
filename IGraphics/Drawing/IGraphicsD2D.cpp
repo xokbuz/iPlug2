@@ -98,26 +98,28 @@ StaticStorage<IGraphicsD2D::Font> IGraphicsD2D::sFontCache;
 
 #pragma mark - Utilites
 
-static inline D2D1_COMPOSITE_MODE D2DBlendMode(const IBlend* pBlend)
+static inline D2D1_PRIMITIVE_BLEND D2DBlendMode(const IBlend* pBlend)
 {
   if (!pBlend)
-    return D2D1_COMPOSITE_MODE_SOURCE_OVER;
+    return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
   else
   {
     switch (pBlend->mMethod)
     {
+    case EBlend::Add:             return D2D1_PRIMITIVE_BLEND_ADD;
     case EBlend::Default:         // fall through
     case EBlend::Clobber:         // fall through
-    case EBlend::SourceOver:      return D2D1_COMPOSITE_MODE_SOURCE_OVER;
-    case EBlend::SourceIn:        return D2D1_COMPOSITE_MODE_SOURCE_IN;
-    case EBlend::SourceOut:       return D2D1_COMPOSITE_MODE_SOURCE_OUT;
-    case EBlend::SourceAtop:      return D2D1_COMPOSITE_MODE_SOURCE_ATOP;
-    case EBlend::DestOver:        return D2D1_COMPOSITE_MODE_DESTINATION_OVER;
-    case EBlend::DestIn:          return D2D1_COMPOSITE_MODE_DESTINATION_IN;
-    case EBlend::DestOut:         return D2D1_COMPOSITE_MODE_DESTINATION_OUT;
-    case EBlend::DestAtop:        return D2D1_COMPOSITE_MODE_DESTINATION_ATOP;
-    case EBlend::Add:             return D2D1_COMPOSITE_MODE_PLUS;
-    case EBlend::XOR:             return D2D1_COMPOSITE_MODE_XOR;
+    case EBlend::SourceOver:
+    default:
+      return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::SourceIn:        return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::SourceOut:       return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::SourceAtop:      return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::DestOver:        return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::DestIn:          return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::DestOut:         return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::DestAtop:        return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
+    //case EBlend::XOR:             return D2D1_PRIMITIVE_BLEND_SOURCE_OVER;
     }
 
   }
@@ -355,7 +357,9 @@ void IGraphicsD2D::PathStroke(const IPattern& pattern, float thickness, const IS
   else if (options.mCapOption == ELineCap::Round) dashCap = D2D1_CAP_STYLE_ROUND;
   else if (options.mCapOption == ELineCap::Square) dashCap = D2D1_CAP_STYLE_SQUARE;
 
-  ID2D1StrokeStyle* style;
+  D2D1_DASH_STYLE dashStyle = options.mDash.GetCount() ? D2D1_DASH_STYLE_CUSTOM : D2D1_DASH_STYLE_DASH;
+
+  ID2D1StrokeStyle* style = nullptr;
 
   HRESULT hr = mFactory->CreateStrokeStyle(
     D2D1::StrokeStyleProperties(
@@ -364,13 +368,14 @@ void IGraphicsD2D::PathStroke(const IPattern& pattern, float thickness, const IS
       dashCap,
       lineJoin,
       options.mMiterLimit,
-      D2D1_DASH_STYLE_CUSTOM,
+      dashStyle,
       0.0f),
     options.mDash.GetArray(),
     options.mDash.GetCount(),
     &style);
 
-  mD2DDeviceContext->DrawGeometry(mPath, GetBrush(pattern), thickness, style);
+  if (style)
+    mD2DDeviceContext->DrawGeometry(mPath, GetBrush(pattern, pBlend), thickness, style);
 }
 
 void IGraphicsD2D::PathFill(const IPattern& pattern, const IFillOptions& options, const IBlend* pBlend)
@@ -383,7 +388,7 @@ void IGraphicsD2D::PathFill(const IPattern& pattern, const IFillOptions& options
     SafeRelease(&mPathSink);
   }
   RenderCheck();
-  mD2DDeviceContext->FillGeometry(mPath, GetBrush(pattern));
+  mD2DDeviceContext->FillGeometry(mPath, GetBrush(pattern, pBlend));
 }
 
 void IGraphicsD2D::DrawLine(const IColor& color, float x1, float y1, float x2, float y2, const IBlend* pBlend, float thickness)
@@ -391,7 +396,9 @@ void IGraphicsD2D::DrawLine(const IColor& color, float x1, float y1, float x2, f
 #ifdef USE_NATIVE_SHAPES
   PathClear();
   RenderCheck();
-  mD2DDeviceContext->DrawLine(D2D1::Point2F(x1,y1), D2D1::Point2F(x2, y2), GetBrush(color), thickness);
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->DrawLine(D2D1::Point2F(x1,y1), D2D1::Point2F(x2, y2), GetBrush(color, pBlend), thickness);
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   IGraphicsPathBase::DrawLine(color, x1, y1, x2, y2, pBlend, thickness);
 #endif
@@ -402,7 +409,9 @@ void IGraphicsD2D::DrawRect(const IColor& color, const IRECT& bounds, const IBle
 #ifdef USE_NATIVE_SHAPES
   PathClear();
   RenderCheck();
-  mD2DDeviceContext->DrawRectangle(D2DRect(bounds), GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->DrawRectangle(D2DRect(bounds), GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   IGraphicsPathBase::DrawRect(color, bounds, pBlend, thickness);
 #endif
@@ -417,7 +426,9 @@ void IGraphicsD2D::DrawRoundRect(const IColor& color, const IRECT& bounds, float
   rr.radiusY = cornerRadius;
   rr.rect = D2DRect(bounds);
   RenderCheck();
-  mD2DDeviceContext->DrawRoundedRectangle(rr, GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->DrawRoundedRectangle(rr, GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   IGraphicsPathBase::DrawRoundRect(color, bounds, cornerRadius, pBlend, thickness);
 #endif
@@ -428,7 +439,9 @@ void IGraphicsD2D::FillRect(const IColor& color, const IRECT& bounds, const IBle
   RenderCheck();
 #ifdef USE_NATIVE_SHAPES
   PathClear();
-  mD2DDeviceContext->FillRectangle(D2DRect(bounds), GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->FillRectangle(D2DRect(bounds), GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   IGraphicsPathBase::FillRect(color, bounds, pBlend);
 #endif
@@ -443,7 +456,9 @@ void IGraphicsD2D::FillRoundRect(const IColor& color, const IRECT& bounds, float
   rr.radiusX = cornerRadius;
   rr.radiusY = cornerRadius;
   rr.rect = D2DRect(bounds);
-  mD2DDeviceContext->FillRoundedRectangle(rr, GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->FillRoundedRectangle(rr, GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   IGraphicsPathBase::FillRoundRect(color, bounds, cornerRadius, pBlend);
 #endif
@@ -459,7 +474,9 @@ void IGraphicsD2D::FillCircle(const IColor& color, float cx, float cy, float r, 
   shape.radiusY = r;
   shape.point.x = cx;
   shape.point.y = cy;
-  mD2DDeviceContext->FillEllipse(shape, GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->FillEllipse(shape, GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   IGraphicsPathBase::FillCircle(color, cx, cy, r, pBlend);
 #endif
@@ -476,7 +493,9 @@ void IGraphicsD2D::FillEllipse(const IColor& color, const IRECT& bounds, const I
   shape.radiusY = bounds.H() / 2.0f;
   shape.point.x = bounds.MW();
   shape.point.y = bounds.MH();
-  mD2DDeviceContext->FillEllipse(shape, GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->FillEllipse(shape, GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   // TODO: doesn't work because path ellipse is broken
   IGraphicsPathBase::FillEllipse(color, bounds, pBlend);
@@ -494,7 +513,9 @@ void IGraphicsD2D::FillEllipse(const IColor& color, float x, float y, float r1, 
   shape.radiusY = r2;
   shape.point.x = x;
   shape.point.y = y;
-  mD2DDeviceContext->FillEllipse(shape, GetBrush(color));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->FillEllipse(shape, GetBrush(color, pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
 #else
   // TODO: doesn't work because path ellipse is broken
   IGraphicsPathBase::FillEllipse(color, bounds, pBlend);
@@ -562,9 +583,12 @@ void IGraphicsD2D::DrawBitmap(const IBitmap& bitmap, const IRECT& dest, int srcX
   const D2D1_RECT_F srcRect = D2DRect(srcIRECT.GetScaled(bitmap.GetDrawScale() * bitmap.GetScale()));
   const D2D1_RECT_F dstRect = D2DRect(dstIRECT);
 
-  //mD2DDeviceContext->DrawBitmap(bitmap.GetAPIBitmap()->GetBitmap(), &dstRect, pBlend ? pBlend->mWeight : 0.f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, & srcRect);
-  const D2D1_POINT_2F destPt = D2D1::Point2F(dstIRECT.L, dstIRECT.T);
-  mD2DDeviceContext->DrawImage(bitmap.GetAPIBitmap()->GetBitmap(), &destPt, &srcRect, D2D1_INTERPOLATION_MODE_LINEAR, D2DBlendMode(pBlend));
+  mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
+  mD2DDeviceContext->DrawBitmap(bitmap.GetAPIBitmap()->GetBitmap(), &dstRect, pBlend ? pBlend->mWeight : 1.f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, & srcRect);
+  mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
+
+  //const D2D1_POINT_2F destPt = D2D1::Point2F(dstIRECT.L, dstIRECT.T);
+  //mD2DDeviceContext->DrawImage(bitmap.GetAPIBitmap()->GetBitmap(), &destPt, &srcRect, D2D1_INTERPOLATION_MODE_LINEAR, D2DBlendMode(pBlend));
 }
 
 IColor IGraphicsD2D::GetPoint(int x, int y)
@@ -1183,22 +1207,24 @@ void IGraphicsD2D::D2DReleaseFactoryResources()
   SafeRelease(&mRadialGradientBrush);
 }
 
-ID2D1Brush* IGraphicsD2D::GetBrush(const IColor& color)
+ID2D1Brush* IGraphicsD2D::GetBrush(const IColor& color, const IBlend* pBlend)
 {
   if (!mSolidBrush)
     HRESULT hr = mD2DDeviceContext->CreateSolidColorBrush(D2DColor(color), &mSolidBrush);
   else
     mSolidBrush->SetColor(D2DColor(color));
 
+  mSolidBrush->SetOpacity(pBlend ? pBlend->mWeight : 1.f);
+
   return mSolidBrush;
 }
 
-ID2D1Brush* IGraphicsD2D::GetBrush(const IPattern& pattern)
+ID2D1Brush* IGraphicsD2D::GetBrush(const IPattern& pattern, const IBlend* pBlend)
 {
   HRESULT hr;
 
   if (pattern.mType == EPatternType::Solid || pattern.NStops() < 2)
-    return GetBrush(pattern.GetStop(0).mColor);
+     return GetBrush(pattern.GetStop(0).mColor, pBlend);
 
   ID2D1GradientStopCollection* pGradientStops = NULL;
 
@@ -1256,6 +1282,8 @@ ID2D1Brush* IGraphicsD2D::GetBrush(const IPattern& pattern)
     );
     //TODO: error check?
 
+    mLinearGradientBrush->SetOpacity(pBlend ? pBlend->mWeight : 1.f);
+
     return mLinearGradientBrush;
   }
   else if (pattern.mType == EPatternType::Radial)
@@ -1277,6 +1305,8 @@ ID2D1Brush* IGraphicsD2D::GetBrush(const IPattern& pattern)
       pGradientStops,
       &mRadialGradientBrush
     );
+
+    mRadialGradientBrush->SetOpacity(pBlend ? pBlend->mWeight : 1.f);
 
     return mRadialGradientBrush;
   }
