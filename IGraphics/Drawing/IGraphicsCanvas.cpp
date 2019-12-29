@@ -479,34 +479,36 @@ bool IGraphicsCanvas::AssetsLoaded()
   return true;
 }
 
-void IGraphicsCanvas::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
+void IGraphicsCanvas::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  int size = pBitmap->GetWidth() * pBitmap->GetHeight() * 4;
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  int size = width * height * 4;
   val context = pBitmap->GetBitmap()->call<val>("getContext", std::string("2d"));
-  val imageData = context.call<val>("getImageData", 0, 0, pBitmap->GetWidth(), pBitmap->GetHeight());
+  val imageData = context.call<val>("getImageData", 0, 0, width, height);
   val pixelData = imageData["data"];
-  data.Resize(size);
+ 
+  ResizeRawBitmap(rawBitmap, width, height, 0, false, 3, 0, 1, 2);
   
   // Copy pixels from context
-  if (data.GetSize() >= size)
+  if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
-    unsigned char* out = data.Get();
+    unsigned char* out = rawBitmap.Get();
     
     for (auto i = 0; i < size; i++)
       out[i] = pixelData[i].as<unsigned char>();
   }
 }
 
-void IGraphicsCanvas::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow)
+void IGraphicsCanvas::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  int size = pBitmap->GetWidth() * pBitmap->GetHeight() * 4;
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  int size = width * height * 4;
   
-  if (mask.GetSize() >= size)
+  if (mask.W() == width && mask.H() == height)
   {
-    int width = pBitmap->GetWidth();
-    int height = pBitmap->GetHeight();
     double scale = pBitmap->GetScale() * pBitmap->GetDrawScale();
     double x = shadow.mXOffset * scale;
     double y = shadow.mYOffset * scale;

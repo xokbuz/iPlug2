@@ -350,29 +350,38 @@ APIBitmap* IGraphicsNanoVG::CreateAPIBitmap(int width, int height, int scale, do
   return pAPIBitmap;
 }
 
-void IGraphicsNanoVG::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
+void IGraphicsNanoVG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  int size = pBitmap->GetWidth() * pBitmap->GetHeight() * 4;
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  bool flipped = false;
   
-  data.Resize(size);
-  
-  if (data.GetSize() >= size)
+#if defined(IGRAPHICS_GL)
+  flipped = true;
+#endif
+    
+  ResizeRawBitmap(rawBitmap, width, height, 0, flipped, 3, 0, 1, 2);
+
+  if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
-    PushLayer(layer.get());
-    nvgReadPixels(mVG, pBitmap->GetBitmap(), 0, 0, pBitmap->GetWidth(), pBitmap->GetHeight(), data.Get());
-    PopLayer();    
+    nvgEndFrame(mVG);
+#ifdef IGRAPHICS_GL
+    glViewport(0, 0, width, height);
+#endif
+    nvgBindFramebuffer(dynamic_cast<const Bitmap*>(pBitmap)->GetFBO());
+    nvgBeginFrame(mVG, width, height, 1.0);
+    nvgReadPixels(mVG, pBitmap->GetBitmap(), 0, 0, width, height, rawBitmap.Get());
+    UpdateLayer();
   }
 }
 
-void IGraphicsNanoVG::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow)
+void IGraphicsNanoVG::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int size = width * height * 4;
   
-  if (mask.GetSize() >= size)
+  if (mask.W() == width && mask.H() == height)
   {
     if (!shadow.mDrawForeground)
     {

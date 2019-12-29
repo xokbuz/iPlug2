@@ -433,6 +433,74 @@ const IColor DEFAULT_TEXT_FGCOLOR = COLOR_BLACK;
 const IColor DEFAULT_TEXTENTRY_BGCOLOR = COLOR_WHITE;
 const IColor DEFAULT_TEXTENTRY_FGCOLOR = COLOR_BLACK;
 
+/** User-facing raw bitmap abstraction that you use to manipulate bitmap data in memory.
+ * IRawBitmap owns the image data
+ * An IBitmap's width and height are always in relation to a 1:1 (low dpi) screen. Any scaling happens at the drawing stage. */
+
+class IRawBitmap
+{
+  friend IGraphics;
+  
+public:
+  
+  IRawBitmap()
+  {
+    mW = 0;
+    mH = 0;
+    mFlipped = false;
+    for (int i = 0; i < 4; i++)
+      mOrder[i] = i;
+  }
+  
+  IColor GetPixel(int x, int y) const
+  {
+    const uint8_t *pixels = GetPixels(x, y);
+    
+    return IColor(pixels[mOrder[0]], pixels[mOrder[1]], pixels[mOrder[2]], pixels[mOrder[3]]);
+  }
+  
+  void SetPixel(int x, int y, IColor color)
+  {
+    uint8_t *pixels = GetPixels(x, y);
+    
+    color.Clamp();
+    
+    pixels[mOrder[0]] = color.A;
+    pixels[mOrder[1]] = color.R;
+    pixels[mOrder[2]] = color.G;
+    pixels[mOrder[3]] = color.B;
+  }
+  
+  bool Flipped() const { return mFlipped; }
+  int RowSpan() const { return mData.GetSize() / mH; }
+  int W() const { return mW; }
+  int H() const { return mH; }
+  
+  uint8_t *Get() { return mData.Get(); }
+  const uint8_t *Get() const { return mData.Get(); }
+    
+  uint8_t *GetPixels(int x, int y)
+  {
+    return mData.Get() + x * 4 + y * RowSpan();
+  }
+    
+  const uint8_t *GetPixels(int x, int y) const
+  {
+    return mData.Get() + x * 4 + y * RowSpan();
+  }
+    
+private:
+    
+  int mOrder[4];
+  bool mFlipped;
+    
+  /** Bitmap width (in pixels) */
+  int mW;
+  /** Bitmap height (in pixels) */
+  int mH;
+  RawBitmapData mData;
+};
+
 /** Used to manage composite/blend operations, independent of draw class/platform */
 struct IBlend
 {

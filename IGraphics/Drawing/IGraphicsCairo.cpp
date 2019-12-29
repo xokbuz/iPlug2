@@ -220,23 +220,26 @@ bool IGraphicsCairo::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
-cairo_surface_t* IGraphicsCairo::CreateCairoDataSurface(const APIBitmap* pBitmap, RawBitmapData& data, bool resize)
+cairo_surface_t* IGraphicsCairo::CreateCairoDataSurface(const APIBitmap* pBitmap, IRawBitmap& rawBitmap, bool resize)
 {
   cairo_surface_t* pSurface = nullptr;
   cairo_format_t format = CAIRO_FORMAT_ARGB32;
-  int stride = cairo_format_stride_for_width(format, pBitmap->GetWidth());
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  int stride = cairo_format_stride_for_width(format, width);
   int size = stride * pBitmap->GetHeight();
+  int align = stride - (width * 4);
   double x, y;
   
   if (resize)
   {
-    data.Resize(size);
-    memset(data.Get(), 0, size);
+    ResizeRawBitmap(rawBitmap, width, height, align, false, 3, 0, 1, 2);
+    memset(rawBitmap.Get(), 0, size);
   }
   
-  if (data.GetSize() >= size)
+  if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
-    pSurface = cairo_image_surface_create_for_data(data.Get(), format, pBitmap->GetWidth(), pBitmap->GetHeight(), stride);
+    pSurface = cairo_image_surface_create_for_data(rawBitmap.Get(), format, width, height, stride);
     cairo_surface_get_device_scale(pBitmap->GetBitmap(), &x, &y);
     cairo_surface_set_device_scale(pSurface, x, y);
   }
@@ -244,10 +247,9 @@ cairo_surface_t* IGraphicsCairo::CreateCairoDataSurface(const APIBitmap* pBitmap
   return pSurface;
 }
 
-void IGraphicsCairo::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
+void IGraphicsCairo::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  cairo_surface_t *pSurface = CreateCairoDataSurface(pBitmap, data, true);
+  cairo_surface_t *pSurface = CreateCairoDataSurface(pBitmap, rawBitmap, true);
   
   if (pSurface)
   {
@@ -260,7 +262,7 @@ void IGraphicsCairo::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& d
   }
 }
 
-void IGraphicsCairo::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow)
+void IGraphicsCairo::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
   cairo_surface_t *pSurface = CreateCairoDataSurface(pBitmap, mask, false);

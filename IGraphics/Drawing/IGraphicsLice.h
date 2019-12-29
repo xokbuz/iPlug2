@@ -91,11 +91,8 @@ protected:
 
   bool LoadAPIFont(const char* fontID, const PlatformFontPtr& font) override;
 
-  int AlphaChannel() const override { return LICE_PIXEL_A; }
-  bool FlippedBitmap() const override { return false; }
-
-  void GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data) override;
-  void ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow) override;
+  void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) override;
+  void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
   void DoMeasureText(const IText& text, const char* str, IRECT& bounds) const override;
   void DoDrawText(const IText& text, const char* str, const IRECT& bounds, const IBlend* pBlend) override;

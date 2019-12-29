@@ -835,31 +835,34 @@ APIBitmap* IGraphicsLice::CreateAPIBitmap(int width, int height, int scale, doub
   return new Bitmap(pBitmap, scale, true);
 }
 
-void IGraphicsLice::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
+void IGraphicsLice::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  int size = pBitmap->GetBitmap()->getHeight() * pBitmap->GetBitmap()->getRowSpan() * sizeof(LICE_pixel);
-  
-  data.Resize(size);
-  
-  if (data.GetSize() >= size)
-    memcpy(data.Get(), pBitmap->GetBitmap()->getBits(), size);
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  int align = (pBitmap->GetBitmap()->getRowSpan() - width) * 4;
+  int size = pBitmap->GetBitmap()->getRowSpan() * height * 4;
+
+  ResizeRawBitmap(rawBitmap, width, height, align, false, LICE_PIXEL_A, LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B);
+    
+  if (rawBitmap.W() == width && rawBitmap.H() == height)
+    memcpy(rawBitmap.Get(), pBitmap->GetBitmap()->getBits(), size);
 }
 
-void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow)
+void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
   LICE_IBitmap* pLayerBitmap = pBitmap->GetBitmap();
 
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
   int stride = pLayerBitmap->getRowSpan() * 4;
-  int size = pLayerBitmap->getHeight() * stride;
 
-  if (mask.GetSize() >= size)
+  if (mask.W() == width && mask.H() == height)
   {
     int x = std::round(shadow.mXOffset * GetScreenScale());
     int y = std::round(shadow.mYOffset * GetScreenScale());
-    int nRows = pBitmap->GetHeight() - std::abs(y);
-    int nCols = pBitmap->GetWidth() - std::abs(x);
+    int nRows = width - std::abs(y);
+    int nCols = height - std::abs(x);
     LICE_pixel_chan* in = mask.Get() + (std::max(-x, 0) * 4) + (std::max(-y, 0) * stride);
     LICE_pixel_chan* out = ((LICE_pixel_chan*) pLayerBitmap->getBits()) + (std::max(x, 0) * 4) + (std::max(y, 0) * stride);
     

@@ -528,13 +528,13 @@ public:
   /** /todo
    * @param layer /todo
    * @param data /todo */
-  virtual void GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data) = 0;
+  virtual void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) = 0;
   
   /** /todo
    * @param layer /todo
    * @param mask /todo
    * @param shadow /todo */
-  virtual void ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow) = 0;
+  virtual void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) = 0;
   
   /** /todo
    * @param layer /todo */
@@ -1418,6 +1418,20 @@ protected:
    * @return APIBitmap* /todo */
   virtual APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) = 0;
 
+  void ResizeRawBitmap(IRawBitmap& bitmap, int width, int height, int align, bool flipped, int a, int r, int g, int b)
+  {
+    bitmap.mFlipped = flipped;
+      
+    bitmap.mData.Resize((width * 4 + align) * height);
+    bitmap.mW = width;
+    bitmap.mH = height;
+    
+    bitmap.mOrder[0] = a;
+    bitmap.mOrder[1] = r;
+    bitmap.mOrder[2] = g;
+    bitmap.mOrder[3] = b;
+  }
+    
   /** /todo
    * @param fontID /todo
    * @param font /todo
@@ -1427,12 +1441,6 @@ protected:
   /** /todo */
   virtual bool AssetsLoaded() { return true; }
     
-  /** /todo */
-  virtual int AlphaChannel() const = 0;
-
-  /** /todo */
-  virtual bool FlippedBitmap() const = 0;
-
   /** Utility used by SearchImageResource/SearchBitmapInCache
    * @param sourceScale /todo
    * @param targetScale /todo */

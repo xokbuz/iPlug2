@@ -489,24 +489,27 @@ bool IGraphicsAGG::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
-void IGraphicsAGG::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
+void IGraphicsAGG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  int size = pBitmap->GetBitmap()->height() * pBitmap->GetBitmap()->row_bytes();
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  int size = height * pBitmap->GetBitmap()->row_bytes();
+  int align = pBitmap->GetBitmap()->row_bytes() - (width * 4);
     
-  data.Resize(size);
+  ResizeRawBitmap(rawBitmap, width, height, align, false, PixelOrder().A, PixelOrder().R, PixelOrder().G, PixelOrder().B);
     
-  if (data.GetSize() >= size)
-    memcpy(data.Get(), pBitmap->GetBitmap()->buf(), size);
+  if (rawBitmap.W() == width && rawBitmap.H() == height)
+    memcpy(rawBitmap.Get(), pBitmap->GetBitmap()->buf(), size);
 }
 
-void IGraphicsAGG::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow)
+void IGraphicsAGG::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
   agg::pixel_map* pPixMap = pBitmap->GetBitmap();
-  int size = pPixMap->height() * pPixMap->row_bytes();
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
     
-  if (mask.GetSize() >= size)
+  if (mask.W() == width && mask.H() == pPixMap->height())
   {
     if (!shadow.mDrawForeground)
     {
@@ -514,7 +517,7 @@ void IGraphicsAGG::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const 
     }
     
     IRECT bounds(layer->Bounds());
-    agg::pixel_wrapper* shadowSource = new agg::pixel_wrapper(mask.Get(), pPixMap->width(), pPixMap->height(), pPixMap->bpp(), pPixMap->row_bytes());
+    agg::pixel_wrapper* shadowSource = new agg::pixel_wrapper(mask.Get(), width, height, pPixMap->bpp(), pPixMap->row_bytes());
     APIBitmap* shadowBitmap = new Bitmap(shadowSource, pBitmap->GetScale(), pBitmap->GetDrawScale(), true);
     IBitmap bitmap(shadowBitmap, 1, false);
     ILayer shadowLayer(shadowBitmap, layer->Bounds(), nullptr, IRECT());

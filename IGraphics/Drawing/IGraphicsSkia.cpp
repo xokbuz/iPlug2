@@ -688,33 +688,35 @@ void IGraphicsSkia::UpdateLayer()
   mCanvas = mLayers.empty() ? mSurface->getCanvas() : mLayers.top()->GetAPIBitmap()->GetBitmap()->mSurface->getCanvas();
 }
 
-static size_t CalcRowBytes(int width)
+static int CalcRowBytes(int width)
 {
   width = ((width + 7) & (-8));
   return width * sizeof(uint32_t);
 }
 
-void IGraphicsSkia::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
+void IGraphicsSkia::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  SkiaDrawable* pDrawable = layer->GetAPIBitmap()->GetBitmap();
-  size_t rowBytes = CalcRowBytes(pDrawable->mSurface->width());
-  int size = pDrawable->mSurface->height() * static_cast<int>(rowBytes);
-    
-  data.Resize(size);
+  SkiaDrawable* pDrawable = pBitmap->GetBitmap();
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+  int rowBytes = CalcRowBytes(width);
+  int align = rowBytes - (width * 4);
+
+  ResizeRawBitmap(rawBitmap, width, height, align, false, 3, 0, 1, 2);
    
-  if (data.GetSize() >= size)
+  if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
-    SkImageInfo info = SkImageInfo::MakeN32Premul(pDrawable->mSurface->width(), pDrawable->mSurface->height());
-    pDrawable->mSurface->readPixels(info, data.Get(), rowBytes, 0, 0);
+    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+    pDrawable->mSurface->readPixels(info, rawBitmap.Get(), rowBytes, 0, 0);
   }
 }
 
-void IGraphicsSkia::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const IShadow& shadow)
+void IGraphicsSkia::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   SkiaDrawable* pDrawable = layer->GetAPIBitmap()->GetBitmap();
-  int width = pDrawable->mSurface->width();
-  int height = pDrawable->mSurface->height();
-  size_t rowBytes = CalcRowBytes(width);
+  int width = layer->GetAPIBitmap()->GetWidth();
+  int height = layer->GetAPIBitmap()->GetHeight();
+  int rowBytes = CalcRowBytes(width);
   double scale = layer->GetAPIBitmap()->GetDrawScale() * layer->GetAPIBitmap()->GetScale();
   
   SkCanvas* pCanvas = pDrawable->mSurface->getCanvas();

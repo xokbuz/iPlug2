@@ -1700,27 +1700,27 @@ void IGraphics::ApplyLayerDropShadow(ILayerPtr& layer, const IShadow& shadow)
     }
   };
   
-  RawBitmapData temp1;
+  IRawBitmap temp1;
   RawBitmapData temp2;
   RawBitmapData kernel;
     
   // Get bitmap in 32-bit form
-  GetLayerBitmapData(layer, temp1);
+  GetAPIBitmapData(layer->GetAPIBitmap(), temp1);
     
-  if (!temp1.GetSize())
+  if (!temp1.mData.GetSize())
       return;
-  temp2.Resize(temp1.GetSize());
+  temp2.Resize(temp1.mData.GetSize());
     
   // Form kernel (reference blurSize from zero (which will be no blur))
-  bool flipped = FlippedBitmap();
+  bool flipped = temp1.mFlipped;
   float scale = layer->GetAPIBitmap()->GetScale() * layer->GetAPIBitmap()->GetDrawScale();
   float blurSize = std::max(1.f, (shadow.mBlurSize * scale) + 1.f);
   float blurConst = 4.5f / (blurSize * blurSize);
   int iSize = static_cast<int>(ceil(blurSize));
   int width = layer->GetAPIBitmap()->GetWidth();
   int height = layer->GetAPIBitmap()->GetHeight();
-  int stride1 = temp1.GetSize() / width;
-  int stride2 = flipped ? -temp1.GetSize() / height : temp1.GetSize() / height;
+  int stride1 = temp1.mData.GetSize() / width;
+  int stride2 = flipped ? -temp1.mData.GetSize() / height : temp1.mData.GetSize() / height;
   int stride3 = flipped ? -stride2 : stride2;
 
   kernel.Resize(iSize);
@@ -1735,9 +1735,9 @@ void IGraphics::ApplyLayerDropShadow(ILayerPtr& layer, const IShadow& shadow)
     normFactor += kernel.Get()[i] + kernel.Get()[i];
   
   // Do blur
-  uint8_t* asRows = temp1.Get() + AlphaChannel();
+  uint8_t* asRows = temp1.mData.Get() + temp1.mOrder[0];
   uint8_t* inRows = flipped ? asRows + stride3 * (height - 1) : asRows;
-  uint8_t* asCols = temp2.Get() + AlphaChannel();
+  uint8_t* asCols = temp2.Get() + temp1.mOrder[0];
   
   GaussianBlurSwap(asCols, inRows, kernel.Get(), width, height, stride1, stride2, iSize, normFactor);
   GaussianBlurSwap(asRows, asCols, kernel.Get(), height, width, stride3, stride1, iSize, normFactor);
