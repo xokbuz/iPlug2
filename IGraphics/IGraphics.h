@@ -1059,7 +1059,11 @@ public:
    * This is useful for programatically arranging UI elements by slicing up the IRECT using the various IRECT methods
    * @return An IRECT that corresponds to the entire UI area, with, L = 0, T = 0, R = Width() and B  = Height() */
   IRECT GetBounds() const { return IRECT(0.f, 0.f, (float) Width(), (float) Height()); }
-  
+
+  /** Sets a function that is called at the frame rate, prior to checking for dirty controls 
+ * @param func The function to call */
+  void SetDisplayTickFunc(IDisplayTickFunc func) { mDisplayTickFunc = func; }
+
   /** /todo
    * @param keyHandlerFunc /todo */
   void SetKeyHandlerFunc(IKeyHandlerFunc func) { mKeyHandlerFunc = func; }
@@ -1420,13 +1424,13 @@ protected:
    * @return bool* /todo */
   virtual bool LoadAPIFont(const char* fontID, const PlatformFontPtr& font) = 0;
 
-  /** /todo */
+  /** Specialized in IGraphicsCanvas drawing backend */
   virtual bool AssetsLoaded() { return true; }
     
-  /** /todo */
+  /** @return int The index of the alpha component in a drawing backend's pixel (RGBA or ARGB) */
   virtual int AlphaChannel() const = 0;
 
-  /** /todo */
+  /** @return bool \c true if the drawing backend flips images (e.g. OpenGL) */
   virtual bool FlippedBitmap() const = 0;
 
   /** Utility used by SearchImageResource/SearchBitmapInCache
@@ -1539,6 +1543,8 @@ private:
   EUIResizerMode mGUISizeMode = EUIResizerMode::Scale;
   double mPrevTimestamp = 0.;
   IKeyHandlerFunc mKeyHandlerFunc = nullptr;
+  IDisplayTickFunc mDisplayTickFunc = nullptr;
+
 protected:
   IGEditorDelegate* mDelegate;
   void* mPlatformContext = nullptr;

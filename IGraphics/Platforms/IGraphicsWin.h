@@ -89,13 +89,7 @@ public:
   static LRESULT CALLBACK ParamEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
   static BOOL CALLBACK FindMainWindow(HWND hWnd, LPARAM lParam);
 
-  // Checks the controls to see if we need to redraw and do so if necessary.  Passing a vblank
-  // count will allow redraws to get paced by the vblank message.  Passing 0 is a WM_TIMER fallback.
-  void RedrawCheck(int vBlankCount = 0);
-
-#ifdef VSYNC_SUPPORT
   DWORD OnVBlankRun();
-#endif
 
 protected:
   IPopupMenu* CreatePlatformPopupMenu(IPopupMenu& menu, const IRECT& bounds) override;
@@ -106,6 +100,11 @@ protected:
   void HideTooltip();
 
 private:
+
+  /** Called either in response to WM_TIMER tick or user message WM_VBLANK, triggered by VSYNC thread
+    * @param vBlankCount will allow redraws to get paced by the vblank message. Passing 0 is a WM_TIMER fallback. */
+  void OnDisplayTimer(int vBlankCount = 0);
+
   enum EParamEditMsg
   {
     kNone,
@@ -120,22 +119,14 @@ private:
   void CachePlatformFont(const char* fontID, const PlatformFontPtr& font) override;
 
   inline IMouseInfo GetMouseInfo(LPARAM lParam, WPARAM wParam);
-  inline IMouseInfo GetMouseInfoDeltas(float&dX, float& dY, LPARAM lParam, WPARAM wParam);
+  inline IMouseInfo GetMouseInfoDeltas(float& dX, float& dY, LPARAM lParam, WPARAM wParam);
   bool MouseCursorIsLocked();
 
-  void StartVBlankThread(HWND hWnd);
-  void StopVBlankThread();
-  void VBlankNotify();
-
 #ifdef IGRAPHICS_GL
-  //OpenGL context management - TODO: RAII instead?
-  void CreateGLContext();
+  void CreateGLContext(); // OpenGL context management - TODO: RAII instead ?
   void DestroyGLContext();
-
-  // Captures previously active GLContext and HDC for restoring, Gets DC
-  void ActivateGLContext();
-  // Restores previous GL context and Releases DC
-  void DeactivateGLContext();
+  void ActivateGLContext(); // Captures previously active GLContext and HDC for restoring, Gets DC
+  void DeactivateGLContext(); // Restores previous GL context and Releases DC
   HGLRC mHGLRC = nullptr;
   HGLRC mStartHGLRC = nullptr;
   HDC mStartHDC = nullptr;
@@ -151,22 +142,15 @@ private:
   HFONT mEditFont = nullptr;
   DWORD mPID = 0;
 
-#ifdef VSYNC_SUPPORT
-  // Window to post messages to for every vsync
-  HWND mVBlankWindow = 0;
-
-  // Flag to indiciate that the vsync thread should shutdown
-  bool mVBlankShutdown = false;
-
-  // ID of thread.
-  HANDLE mVBlankThread = INVALID_HANDLE_VALUE;
-
-  // running count of vblank events since the start of the window.
-  volatile DWORD mVBlankCount = 0;
-
-  // support for skipping vblank notification if the last callback took
-  // to long.  This helps keep the message pump clear in the case of overload.
-  int mVBlankSkipUntil = 0;
+#ifdef IGRAPHICS_VSYNC
+  void StartVBlankThread(HWND hWnd);
+  void StopVBlankThread();
+  void VBlankNotify();
+  HWND mVBlankWindow = 0; // Window to post messages to for every vsync
+  bool mVBlankShutdown = false; // Flag to indiciate that the vsync thread should shutdown
+  HANDLE mVBlankThread = INVALID_HANDLE_VALUE; //ID of thread.
+  volatile DWORD mVBlankCount = 0; // running count of vblank events since the start of the window.
+  int mVBlankSkipUntil = 0; // support for skipping vblank notification if the last callback took  too long.  This helps keep the message pump clear in the case of overload.
 #endif
 
   const IParam* mEditParam = nullptr;

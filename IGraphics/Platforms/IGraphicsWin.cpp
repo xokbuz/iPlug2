@@ -216,11 +216,10 @@ void IGraphicsWin::DestroyEditWindow()
  }
 }
 
-void IGraphicsWin::RedrawCheck(int vBlankCount)
+void IGraphicsWin::OnDisplayTimer(int vBlankCount)
 {
-#ifdef VSYNC_SUPPORT
-  // we should check the message vblank with the current one to see if we are way behind.  If so,
-  // then throw these away.
+#ifdef IGRAPHICS_VSYNC
+  // Check the message vblank with the current one to see if we are way behind. If so, then throw these away.
   DWORD msgCount = vBlankCount;
   DWORD curCount = mVBlankCount;
 
@@ -229,55 +228,46 @@ void IGraphicsWin::RedrawCheck(int vBlankCount)
   {
     return;
   }
+
   mVBlankSkipUntil = 0;
 
   if (msgCount != curCount)
   {
     // we are late, just skip it until we can get a message soon after the vblank event.
-//    DBGMSG("vblank is late by %i frames.  Skipping.", (mVBlankCount - msgCount));
+    // DBGMSG("vblank is late by %i frames.  Skipping.", (mVBlankCount - msgCount));
     return;
   }
 #endif
-
-
-  // NOTE: it would be best to handle all OnIdle stuff now before redrawing -- this is a total hack and
-  // I don't know if and how we can do this properly in production.
-//  if (IPlugAPIBase::s_theBase != nullptr)
-//    IPlugAPIBase::s_theBase->OnTimer();
 
   if (mParamEditWnd && mParamEditMsg != kNone)
   {
     switch (mParamEditMsg)
     {
-    case kCommit:
-    {
-      char txt[MAX_WIN32_PARAM_LEN];
-      SendMessage(mParamEditWnd, WM_GETTEXT, MAX_WIN32_PARAM_LEN, (LPARAM)txt);
-      SetControlValueAfterTextEdit(txt);
-      DestroyEditWindow();
+      case kCommit:
+      {
+        char txt[MAX_WIN32_PARAM_LEN];
+        SendMessage(mParamEditWnd, WM_GETTEXT, MAX_WIN32_PARAM_LEN, (LPARAM)txt);
+        SetControlValueAfterTextEdit(txt);
+        DestroyEditWindow();
+        break;
+      }
+      case kCancel:
+        DestroyEditWindow();
+        break;
     }
-    break;
 
-    case kCancel:
-    {
-      DestroyEditWindow();
-    }
-    break;
-    }
     mParamEditMsg = kNone;
+
     return; // TODO: check this!
   }
 
-  // TODO: this is probably overkill.  We could have some low speed checks
-  // or better, listen to the right messages in windows for screen resolution
-  // changes, etc.
+  // TODO: move this... listen to the right messages in windows for screen resolution changes, etc.
   int scale = GetScaleForWindow(mPlugWnd);
   if (scale != GetScreenScale())
     SetScreenScale(scale);
 
-  // this is far to aggressive for slow drawing animations and data changing.  We need to
-  // gate the rate of updates to a certain percentage of the wall clock
-  // time.
+  // TODO: this is far too aggressive for slow drawing animations and data changing.  We need to
+  // gate the rate of updates to a certain percentage of the wall clock time.
   IRECTList rects;
   if (IsDirty(rects))
   {
@@ -307,8 +297,8 @@ void IGraphicsWin::RedrawCheck(int vBlankCount)
       // Force a redraw right now
       UpdateWindow(mPlugWnd);
 
+#ifdef IGRAPHICS_VSYNC
       // Check and see if we are still in this frame.
-#ifdef VSYNC_SUPPORT
       curCount = mVBlankCount;
       if (msgCount != curCount)
       {
@@ -332,13 +322,10 @@ LRESULT CALLBACK IGraphicsWin::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
     SetWindowLongPtr(hWnd, GWLP_USERDATA, (LPARAM)(lpcs->lpCreateParams));
     IGraphicsWin* pGraphics = (IGraphicsWin*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
-    // IGraphics needs a way to check for updating the window.
-#ifdef VSYNC_SUPPORT
+#ifdef IGRAPHICS_VSYNC // use VBLANK Thread
+    assert((pGraphics->FPS() == 60) && "If you want to run at frame rates other than 60FPS remove IGRAPHICS_VSYNC");
     pGraphics->StartVBlankThread(hWnd);
-#else
-
-    // use WM_TIMER -- its best to get below 16ms because the windows time quanta is slightly
-    // above 15ms.
+#else // use WM_TIMER -- its best to get below 16ms because the windows time quanta is slightly above 15ms.
     int mSec = static_cast<int>(std::floorf(1000.0f / (pGraphics->FPS())));
     if (mSec < 20) mSec = 15;
     SetTimer(hWnd, IPLUG_TIMER_ID, mSec, NULL);
@@ -370,18 +357,14 @@ LRESULT CALLBACK IGraphicsWin::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
   switch (msg)
   {
-    case WM_SIZE:
-      pGraphics->DrawResize();
-
     case WM_VBLANK:
-      pGraphics->RedrawCheck(wParam);
+      pGraphics->OnDisplayTimer(wParam);
       return 0;
 
     case WM_TIMER:
       if (wParam == IPLUG_TIMER_ID)
-      {
-        pGraphics->RedrawCheck(0);
-      }
+        pGraphics->OnDisplayTimer(0);
+
       return 0;
 
     case WM_ERASEBKGND:
@@ -567,7 +550,7 @@ LRESULT CALLBACK IGraphicsWin::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
           addDrawRect(rects, r);
         }
 
-#ifdef IGRAPHICS_GL
+#if defined IGRAPHICS_GL || IGRAPHICS_D2D
         PAINTSTRUCT ps;
         BeginPaint(hWnd, &ps);
 #endif
@@ -583,7 +566,7 @@ LRESULT CALLBACK IGraphicsWin::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         pGraphics->DeactivateGLContext();
         #endif
 
-#ifdef IGRAPHICS_GL
+#if defined IGRAPHICS_GL || IGRAPHICS_D2D
         EndPaint(hWnd, &ps);
 #endif
       }
@@ -1088,6 +1071,10 @@ void* IGraphicsWin::OpenWindow(void* pParent)
     }
 
     if (!ok) EnableTooltips(ok);
+
+#ifdef IGRAPHICS_GL
+    wglMakeCurrent(NULL, NULL);
+#endif
   }
 
   GetDelegate()->OnUIOpen();
@@ -1167,9 +1154,20 @@ void IGraphicsWin::CloseWindow()
 {
   if (mPlugWnd)
   {
+#ifdef IGRAPHICS_VSYNC
+    StopVBlankThread();
+#else
+    KillTimer(mPlugWnd, IPLUG_TIMER_ID);
+#endif
+
+#ifdef IGRAPHICS_GL
+    ActivateGLContext();
+#endif
+
     OnViewDestroyed();
 
 #ifdef IGRAPHICS_GL
+    DeactivateGLContext();
     DestroyGLContext();
 #endif
 
@@ -1905,7 +1903,7 @@ void IGraphicsWin::CachePlatformFont(const char* fontID, const PlatformFontPtr& 
     hfontStorage.Add(new HFontHolder(hfont), fontID);
 }
 
-#ifdef VSYNC_SUPPORT
+#ifdef IGRAPHICS_VSYNC
 DWORD WINAPI VBlankRun(LPVOID lpParam)
 {
   IGraphicsWin* pGraphics = (IGraphicsWin*)lpParam;
@@ -2112,7 +2110,7 @@ void IGraphicsWin::VBlankNotify()
   #include "nanovg.c"
   #include "glad.c"
 #elif defined IGRAPHICS_D2D
-//  #include "IGraphicsD2D.cpp"
+  #include "IGraphicsD2D.cpp"
 #else
   #error
 #endif

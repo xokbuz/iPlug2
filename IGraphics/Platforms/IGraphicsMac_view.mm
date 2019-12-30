@@ -552,7 +552,9 @@ extern StaticStorage<CoreTextFontDescriptor> sFontDescriptorCache;
   
   CGFloat newScale = [pWindow backingScaleFactor];
   
-  if (mGraphics->GetDrawContext() && newScale != mGraphics->GetScreenScale())
+  mGraphics->SetPlatformContext(nullptr);
+  
+  if (newScale != mGraphics->GetScreenScale())
     mGraphics->SetScreenScale(newScale);
 
 #if defined IGRAPHICS_GL
@@ -565,10 +567,8 @@ extern StaticStorage<CoreTextFontDescriptor> sFontDescriptorCache;
 
 - (CGContextRef) getCGContextRef
 {
-  CGContextRef pCGC = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
-  NSGraphicsContext* gc = [NSGraphicsContext graphicsContextWithGraphicsPort: pCGC flipped: YES];
-  pCGC = (CGContextRef) [gc graphicsPort];
-  return pCGC;
+  CGContextRef pCGC = [NSGraphicsContext currentContext].CGContext;
+  return [NSGraphicsContext graphicsContextWithCGContext: pCGC flipped: YES].CGContext;
 }
 
 // not called for layer backed views

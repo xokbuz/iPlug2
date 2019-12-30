@@ -11,6 +11,8 @@
 
 #include "GrContext.h"
 
+#include "IGraphicsSkia_src.cpp"
+
 #if defined OS_MAC || defined OS_IOS
   #include "SkCGUtils.h"
   #if defined IGRAPHICS_GL2
@@ -502,7 +504,7 @@ void IGraphicsSkia::PrepareAndMeasureText(const IText& text, const char* str, IR
 {
   SkFontMetrics metrics;
   SkPaint paint;
-  SkRect bounds;
+  //SkRect bounds;
   
   StaticStorage<Font>::Accessor storage(sFontCache);
   Font* pFont = storage.Find(text.mFont);
@@ -516,10 +518,9 @@ void IGraphicsSkia::PrepareAndMeasureText(const IText& text, const char* str, IR
   font.setSize(text.mSize * pFont->mData->GetHeightEMRatio());
   
   // Draw / measure
-  font.measureText(str, strlen(str), SkTextEncoding::kUTF8, &bounds);
+  const double textWidth = font.measureText(str, strlen(str), SkTextEncoding::kUTF8, nullptr/* &bounds*/);
   font.getMetrics(&metrics);
   
-  const double textWidth = bounds.width();// + textExtents.x_bearing;
   const double textHeight = text.mSize;
   const double ascender = metrics.fAscent;
   const double descender = metrics.fDescent;
@@ -617,9 +618,9 @@ void IGraphicsSkia::PathFill(const IPattern& pattern, const IFillOptions& option
   paint.setStyle(SkPaint::kFill_Style);
   
   if (options.mFillRule == EFillRule::Winding)
-    mMainPath.setFillType(SkPath::kWinding_FillType);
+    mMainPath.setFillType(SkPathFillType::kWinding);
   else
-    mMainPath.setFillType(SkPath::kEvenOdd_FillType);
+    mMainPath.setFillType(SkPathFillType::kEvenOdd);
   
   RenderPath(paint);
   
