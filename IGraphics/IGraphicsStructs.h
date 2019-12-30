@@ -35,6 +35,7 @@ class IGraphics;
 class IControl;
 class ILambdaControl;
 struct IRECT;
+struct Vec2;
 struct IMouseInfo;
 struct IColor;
 
@@ -44,12 +45,15 @@ using ILambdaDrawFunction = std::function<void(ILambdaControl*, IGraphics&, IREC
 using IKeyHandlerFunc = std::function<bool(const IKeyPress& key, bool isUp)>;
 using IMsgBoxCompletionHanderFunc = std::function<void(EMsgBoxResult result)>;
 using IColorPickerHandlerFunc = std::function<void(const IColor& result)>;
+using IDisplayTickFunc = std::function<void()>;
 
 void EmptyClickActionFunc(IControl* pCaller);
 void DefaultClickActionFunc(IControl* pCaller);
 void DefaultAnimationFunc(IControl* pCaller);
 void SplashClickActionFunc(IControl* pCaller);
 void SplashAnimationFunc(IControl* pCaller);
+
+using MTLTexturePtr = void*;
 
 using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 using Milliseconds = std::chrono::duration<double, std::chrono::milliseconds::period>;
@@ -134,6 +138,39 @@ private:
 
 /** User-facing SVG abstraction that you use to manage SVG data
  * ISVG doesn't actually own the image data */
+
+#ifdef IGRAPHICS_SKIA
+struct ISVG
+{
+  ISVG(sk_sp<SkSVGDOM> svgDom)
+  : mSVGDom(svgDom)
+  {
+  }
+  
+  /** /todo */
+  float W() const
+  {
+    if (mSVGDom)
+      return mSVGDom->containerSize().width();
+    else
+      return 0;
+  }
+  
+  /** /todo */
+  float H() const
+  {
+    if (mSVGDom)
+      return mSVGDom->containerSize().height();
+    else
+      return 0;
+  }
+  
+  /** @return \true if the SVG has valid data */
+  inline bool IsValid() const { return mSVGDom != nullptr; }
+  
+  sk_sp<SkSVGDOM> mSVGDom;
+};
+#else
 struct ISVG
 {  
   ISVG(NSVGimage* pImage)
@@ -164,6 +201,7 @@ struct ISVG
   
   NSVGimage* mImage = nullptr;
 };
+#endif
 
 /** Used to manage color data, independent of draw class/platform. */
 struct IColor
@@ -248,9 +286,9 @@ struct IColor
   static IColor FromRGBf(float* rgbf)
   {
     int A = 255;
-    int R = rgbf[0] * 255;
-    int G = rgbf[1] * 255;
-    int B = rgbf[2] * 255;
+    int R = static_cast<int>(rgbf[0] * 255.f);
+    int G = static_cast<int>(rgbf[1] * 255.f);
+    int B = static_cast<int>(rgbf[2] * 255.f);
     
     return IColor(A, R, G, B);
   }
@@ -260,10 +298,10 @@ struct IColor
    * @return IColor A new IColor based on the input array */
   static IColor FromRGBAf(float* rgbaf)
   {
-    int R = rgbaf[0] * 255;
-    int G = rgbaf[1] * 255;
-    int B = rgbaf[2] * 255;
-    int A = rgbaf[3] * 255;
+    int R = static_cast<int>(rgbaf[0] * 255.f);
+    int G = static_cast<int>(rgbaf[1] * 255.f);
+    int B = static_cast<int>(rgbaf[2] * 255.f);
+    int A = static_cast<int>(rgbaf[3] * 255.f);
 
     return IColor(A, R, G, B);
   }
@@ -491,9 +529,11 @@ static const char* TextStyleString(ETextStyle style)
 {
   switch (style)
   {
-    case ETextStyle::Normal:  return "Regular";
-    case ETextStyle::Bold:    return "Bold";
-    case ETextStyle::Italic:  return "Italic";
+    case ETextStyle::Bold: return "Bold";
+    case ETextStyle::Italic: return "Italic";
+    case ETextStyle::Normal:
+    default:
+      return "Regular";
   }
 }
 
@@ -1404,6 +1444,8 @@ struct IRECT
     else
       return H();
   }
+  
+  void DBGPrint() { DBGMSG("L: %f, T: %f, R: %f, B: %f,: W: %f, H: %f\n", L, T, R, B, W(), H()); }
 };
 
 /** Used to manage mouse modifiers i.e. right click and shift/control/alt keys. */

@@ -138,7 +138,6 @@ protected:
   IRECT mStartRect, mEndRect;
   IRECT mHandleBounds;
   EDirection mDirection;
-  IActionFunction mSecondaryActionFunc = EmptyClickActionFunc;
   EVShape mShape = EVShape::Rectangle;
 };
 
@@ -166,6 +165,9 @@ public:
   virtual bool IsHit(float x, float y) const override;
   void SetShape(EVShape shape) { mShape = shape; SetDirty(false); }
 protected:
+  /** @return the index of the entry at the given point or -1 if no entry was hit */
+  virtual int GetButtonForPoint(float x, float y) const;
+
   int mMouseOverButton = -1;
   WDL_TypedBuf<IRECT> mButtons;
   WDL_PtrList<WDL_String> mTabLabels;
@@ -198,12 +200,10 @@ public:
   IVRadioButtonControl(const IRECT& bounds, IActionFunction actionFunc, const std::initializer_list<const char*>& options, const char* label = "", const IVStyle& style = DEFAULT_STYLE, EVShape shape = EVShape::Ellipse, EDirection direction = EDirection::Vertical, float buttonSize = 20.f);
   
   virtual void DrawWidget(IGraphics& g) override;
-  void OnMouseDown(float x, float y, const IMouseMod& mod) override;
-  void OnMouseOver(float x, float y, const IMouseMod& mod) override;
-  void OnMouseOut() override { mMouseOverButton = -1; }
-  void OnResize() override;
-  virtual bool IsHit(float x, float y) const override;
 protected:
+  /** @return the index of the clickable entry at the given point or -1 if no entry was hit */
+  int GetButtonForPoint(float x, float y) const override;
+
   float mButtonSize;
   bool mOnlyButtonsRespondToMouse = false;
 };
@@ -452,10 +452,10 @@ public:
     mBitmap = GetUI()->GetScaledBitmap(mBitmap);
   }
 
-  void GrayOut(bool gray) override
+  void SetDisabled(bool disable) override
   {
-    IBitmapBase::GrayOut(gray);
-    IControl::GrayOut(gray);
+    IBitmapBase::SetDisabled(disable);
+    IControl::SetDisabled(disable);
   }
 };
 
@@ -491,7 +491,7 @@ public:
   
   virtual ~IBSwitchControl() {}
   void Draw(IGraphics& g) override { DrawBitmap(g); }
-  void GrayOut(bool gray) override { IBitmapBase::GrayOut(gray); IControl::GrayOut(gray); }
+  void SetDisabled(bool disable) override { IBitmapBase::SetDisabled(disable); IControl::SetDisabled(disable); }
   void OnRescale() override { mBitmap = GetUI()->GetScaledBitmap(mBitmap); }
   void OnMouseDown(float x, float y, const IMouseMod& mod) override;
 };
@@ -517,7 +517,7 @@ public:
 
   virtual ~IBKnobControl() {}
   void Draw(IGraphics& g) override { DrawBitmap(g); }
-  void GrayOut(bool gray) override { IBitmapBase::GrayOut(gray); IControl::GrayOut(gray); }
+  void SetDisabled(bool disable) override { IBitmapBase::SetDisabled(disable); IControl::SetDisabled(disable); }
   void OnRescale() override { mBitmap = GetUI()->GetScaledBitmap(mBitmap); }
 };
 
@@ -554,7 +554,7 @@ public:
   void Draw(IGraphics& g) override;
   void OnRescale() override { mBitmap = GetUI()->GetScaledBitmap(mBitmap); }
   void OnResize() override { SetDirty(false); }
-  void GrayOut(bool gray) override  { IBitmapBase::GrayOut(gray); IControl::GrayOut(gray); }
+  void SetDisabled(bool disable) override  { IBitmapBase::SetDisabled(disable); IControl::SetDisabled(disable); }
   
   IRECT GetHandleBounds(double value = -1.0) const;
 };
@@ -584,7 +584,7 @@ public:
   }
 
   void OnRescale() override { mBitmap = GetUI()->GetScaledBitmap(mBitmap); }
-  void GrayOut(bool gray) override  { IBitmapBase::GrayOut(gray); IControl::GrayOut(gray); }
+  void SetDisabled(bool disable) override  { IBitmapBase::SetDisabled(disable); IControl::SetDisabled(disable); }
 
 protected:
   WDL_String mStr;

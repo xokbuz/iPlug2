@@ -643,6 +643,10 @@ public:
   virtual void PathLineTo(float x, float y) {}
 
   /** /todo
+  * @param clockwise /todo*/
+  virtual void PathSetWinding(bool clockwise) {}
+
+  /** /todo
    * @param c1x  /todo
    * @param c1y  /todo
    * @param c2x  /todo
@@ -1020,7 +1024,10 @@ public:
   
   /** @return An EUIResizerMode Representing whether the graphics context should scale or be resized, e.g. when dragging a corner resizer */
   EUIResizerMode GetResizerMode() const { return mGUISizeMode; }
-  
+
+  /** @return true if resizing is in process */
+  bool GetResizingInProcess() const { return mResizingInProcess; }
+
   /** @param enable Set \c true to enable tool tips when the user mouses over a control */
   void EnableTooltips(bool enable);
   
@@ -1052,7 +1059,11 @@ public:
    * This is useful for programatically arranging UI elements by slicing up the IRECT using the various IRECT methods
    * @return An IRECT that corresponds to the entire UI area, with, L = 0, T = 0, R = Width() and B  = Height() */
   IRECT GetBounds() const { return IRECT(0.f, 0.f, (float) Width(), (float) Height()); }
-  
+
+  /** Sets a function that is called at the frame rate, prior to checking for dirty controls 
+ * @param func The function to call */
+  void SetDisplayTickFunc(IDisplayTickFunc func) { mDisplayTickFunc = func; }
+
   /** /todo
    * @param keyHandlerFunc /todo */
   void SetKeyHandlerFunc(IKeyHandlerFunc func) { mKeyHandlerFunc = func; }
@@ -1097,7 +1108,7 @@ private:
    * @param valIdx The value index for the control value that the prompt relates to */
   void DoCreatePopupMenu(IControl& control, IPopupMenu& menu, const IRECT& bounds, int valIdx, bool isContext);
   
-protected: // TODO: correct?
+protected:
   /** /todo */
   void StartResizeGesture() { mResizingInProcess = true; };
   
@@ -1222,10 +1233,10 @@ public:
    * @param hide /true to hide */
   void HideControl(int paramIdx, bool hide);
 
-  /** Gray-out controls linked to a specific parameter
+  /** Disable or enable controls linked to a specific parameter
    * @param paramIdx The parameter index
-   * @param gray /true to gray-out */
-  void GrayOutControl(int paramIdx, bool gray);
+   * @param disable /true to disable */
+  void DisableControl(int paramIdx, bool diable);
 
   /** Calls SetDirty() on every control */
   void SetAllControlsDirty();
@@ -1532,6 +1543,8 @@ private:
   EUIResizerMode mGUISizeMode = EUIResizerMode::Scale;
   double mPrevTimestamp = 0.;
   IKeyHandlerFunc mKeyHandlerFunc = nullptr;
+  IDisplayTickFunc mDisplayTickFunc = nullptr;
+
 protected:
   IGEditorDelegate* mDelegate;
   void* mPlatformContext = nullptr;

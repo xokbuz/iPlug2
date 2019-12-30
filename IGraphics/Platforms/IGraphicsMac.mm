@@ -110,7 +110,7 @@ void IGraphicsMac::ContextReady(void* pLayer)
 
 void* IGraphicsMac::OpenWindow(void* pParent)
 {
-  TRACE;
+  TRACE
   CloseWindow();
   mView = (IGRAPHICS_VIEW*) [[IGRAPHICS_VIEW alloc] initWithIGraphics: this];
   
@@ -142,6 +142,11 @@ void IGraphicsMac::CloseWindow()
 #endif
     
     IGRAPHICS_VIEW* pView = (IGRAPHICS_VIEW*) mView;
+      
+#ifdef IGRAPHICS_GL
+    [((IGRAPHICS_GLLAYER *)pView.layer).openGLContext makeCurrentContext];
+#endif
+      
     [pView removeAllToolTips];
     [pView killTimer];
     [pView removeFromSuperview];

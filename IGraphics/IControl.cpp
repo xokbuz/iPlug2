@@ -212,12 +212,16 @@ void IControl::SetDirty(bool triggerAction, int valIdx)
   }
 }
 
+void IControl::Animate()
+{
+  if (GetAnimationFunction())
+    mAnimationFunc(this);
+}
+
 bool IControl::IsDirty()
 {
-  if(GetAnimationFunction()) {
-    mAnimationFunc(this);
+  if (GetAnimationFunction())
     return true;
-  }
   
   return mDirty;
 }
@@ -228,9 +232,9 @@ void IControl::Hide(bool hide)
   SetDirty(false);
 }
 
-void IControl::GrayOut(bool gray)
+void IControl::SetDisabled(bool disable)
 {
-  mGrayed = gray;
+  mDisabled = disable;
   SetDirty(false);
 }
 
@@ -278,6 +282,22 @@ void IControl::OnPopupMenuSelection(IPopupMenu* pSelectedMenu, int valIdx)
   {
     SetValueFromUserInput(GetParam()->ToNormalized( (double) pSelectedMenu->GetChosenItemIdx()), valIdx);
   }
+}
+
+void IControl::SetPosition(float x, float y)
+{
+  if (x < 0.f) x = 0.f;
+  if (y < 0.f) y = 0.f;
+
+  SetTargetAndDrawRECTs({x, y, x + mRECT.W(), y + mRECT.H()});
+}
+
+void IControl::SetSize(float w, float h)
+{
+  if (w < 0.f) w = 0.f;
+  if (h < 0.f) h = 0.f;
+
+  SetTargetAndDrawRECTs({mRECT.L, mRECT.T, mRECT.L + w, mRECT.T + h});
 }
 
 void IControl::PromptUserInput(int valIdx)
@@ -363,6 +383,30 @@ void IControl::SnapToMouse(float x, float y, EDirection direction, const IRECT& 
   
   ForValIdx(valIdx, valFunc);
   SetDirty(true, valIdx);
+}
+
+void IControl::OnEndAnimation()
+{
+  mAnimationFunc = nullptr;
+  SetDirty(false);
+  
+  if(mAnimationEndActionFunc)
+    mAnimationEndActionFunc(this);
+}
+
+void IControl::StartAnimation(int duration)
+{
+  mAnimationStartTime = std::chrono::high_resolution_clock::now();
+  mAnimationDuration = Milliseconds(duration);
+}
+
+double IControl::GetAnimationProgress() const
+{
+  if(!mAnimationFunc)
+    return 0.;
+  
+  auto elapsed = Milliseconds(std::chrono::high_resolution_clock::now() - mAnimationStartTime);
+  return elapsed.count() / mAnimationDuration.count();
 }
 
 ITextControl::ITextControl(const IRECT& bounds, const char* str, const IText& text, const IColor& BGColor, bool setBoundsBasedOnStr)

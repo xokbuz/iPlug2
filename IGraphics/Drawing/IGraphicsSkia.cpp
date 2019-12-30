@@ -1,4 +1,5 @@
 #include <cmath>
+#include <map>
 
 #include "IGraphicsSkia.h"
 
@@ -9,6 +10,8 @@
 #include "SkTypeface.h"
 
 #include "GrContext.h"
+
+#include "IGraphicsSkia_src.cpp"
 
 #if defined OS_MAC || defined OS_IOS
   #include "SkCGUtils.h"
@@ -39,6 +42,8 @@
 using namespace iplug;
 using namespace igraphics;
 
+extern std::map<std::string, MTLTexturePtr> gTextureMap;
+
 #pragma mark - Private Classes and Structs
 
 class IGraphicsSkia::Bitmap : public APIBitmap
@@ -47,7 +52,8 @@ public:
   Bitmap(GrContext* context, int width, int height, int scale, float drawScale);
   Bitmap(const char* path, double sourceScale);
   Bitmap(const void* pData, int size, double sourceScale);
-  
+  Bitmap(sk_sp<SkImage>, double sourceScale);
+
 private:
   SkiaDrawable mDrawable;
 };
@@ -80,6 +86,12 @@ IGraphicsSkia::Bitmap::Bitmap(const void* pData, int size, double sourceScale)
   mDrawable.mImage = SkImage::MakeFromEncoded(data);
   
   mDrawable.mIsSurface = false;
+  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), sourceScale, 1.f);
+}
+
+IGraphicsSkia::Bitmap::Bitmap(sk_sp<SkImage> image, double sourceScale)
+{
+  mDrawable.mImage = image;
   SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), sourceScale, 1.f);
 }
 
@@ -229,6 +241,22 @@ bool IGraphicsSkia::BitmapExtSupported(const char* ext)
 
 APIBitmap* IGraphicsSkia::LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext)
 {
+#ifdef OS_IOS
+  if (location == EResourceLocation::kPreloadedTexture)
+  {
+    GrMtlTextureInfo textureInfo;
+    textureInfo.fTexture.retain((__bridge const void*)(gTextureMap[fileNameOrResID]));
+    id<MTLTexture> texture = (id<MTLTexture>) textureInfo.fTexture.get();
+    
+    MTLPixelFormat pixelFormat = texture.pixelFormat;
+    
+    auto grBackendTexture = GrBackendTexture(texture.width, texture.height, GrMipMapped::kNo, textureInfo);
+    
+    sk_sp<SkImage> image = SkImage::MakeFromTexture(mGrContext.get(), grBackendTexture, kTopLeft_GrSurfaceOrigin, kBGRA_8888_SkColorType, kOpaque_SkAlphaType, nullptr);
+    return new Bitmap(image, scale);
+  }
+  else
+#endif
 #ifdef OS_WIN
   if (location == EResourceLocation::kWinBinary)
   {
@@ -476,7 +504,7 @@ void IGraphicsSkia::PrepareAndMeasureText(const IText& text, const char* str, IR
 {
   SkFontMetrics metrics;
   SkPaint paint;
-  SkRect bounds;
+  //SkRect bounds;
   
   StaticStorage<Font>::Accessor storage(sFontCache);
   Font* pFont = storage.Find(text.mFont);
@@ -490,10 +518,9 @@ void IGraphicsSkia::PrepareAndMeasureText(const IText& text, const char* str, IR
   font.setSize(text.mSize * pFont->mData->GetHeightEMRatio());
   
   // Draw / measure
-  font.measureText(str, strlen(str), SkTextEncoding::kUTF8, &bounds);
+  const double textWidth = font.measureText(str, strlen(str), SkTextEncoding::kUTF8, nullptr/* &bounds*/);
   font.getMetrics(&metrics);
   
-  const double textWidth = bounds.width();// + textExtents.x_bearing;
   const double textHeight = text.mSize;
   const double ascender = metrics.fAscent;
   const double descender = metrics.fDescent;
@@ -591,9 +618,9 @@ void IGraphicsSkia::PathFill(const IPattern& pattern, const IFillOptions& option
   paint.setStyle(SkPaint::kFill_Style);
   
   if (options.mFillRule == EFillRule::Winding)
-    mMainPath.setFillType(SkPath::kWinding_FillType);
+    mMainPath.setFillType(SkPathFillType::kWinding);
   else
-    mMainPath.setFillType(SkPath::kEvenOdd_FillType);
+    mMainPath.setFillType(SkPathFillType::kEvenOdd);
   
   RenderPath(paint);
   

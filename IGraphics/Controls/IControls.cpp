@@ -178,7 +178,7 @@ IVSlideSwitchControl::IVSlideSwitchControl(const IRECT& bounds, int paramIdx, co
     SetAnimation([&](IControl* pCaller) {
       auto progress = pCaller->GetAnimationProgress();
       
-      IRECT::LinearInterpolateBetween(mStartRect, mEndRect, mHandleBounds, progress);
+      IRECT::LinearInterpolateBetween(mStartRect, mEndRect, mHandleBounds, static_cast<float>(progress));
 
       if(mValueInWidget)
         mValueBounds = mHandleBounds;
@@ -195,7 +195,6 @@ IVSlideSwitchControl::IVSlideSwitchControl(const IRECT& bounds, int paramIdx, co
 IVSlideSwitchControl::IVSlideSwitchControl(const IRECT& bounds, IActionFunction actionFunc, const char* label, const IVStyle& style, bool valueInButton, EDirection direction, int numStates, int initialState)
 : IVSwitchControl(bounds, nullptr, label, style, numStates, valueInButton)
 , mDirection(direction)
-, mSecondaryActionFunc(actionFunc)
 {
   SetValue((double) initialState);
   
@@ -203,7 +202,7 @@ IVSlideSwitchControl::IVSlideSwitchControl(const IRECT& bounds, IActionFunction 
     SetAnimation([&](IControl* pCaller) {
       auto progress = pCaller->GetAnimationProgress();
       
-      IRECT::LinearInterpolateBetween(mStartRect, mEndRect, mHandleBounds, progress);
+      IRECT::LinearInterpolateBetween(mStartRect, mEndRect, mHandleBounds, static_cast<float>(progress));
       
       if(mValueInWidget)
         mValueBounds = mHandleBounds;
@@ -216,6 +215,8 @@ IVSlideSwitchControl::IVSlideSwitchControl(const IRECT& bounds, IActionFunction 
     },
     DEFAULT_ANIMATION_DURATION);
   });
+  
+  SetAnimationEndActionFunction(actionFunc);
 }
 
 void IVSlideSwitchControl::UpdateRects()
@@ -235,11 +236,8 @@ void IVSlideSwitchControl::OnResize()
 
 void IVSlideSwitchControl::OnEndAnimation()
 {
-  if(mSecondaryActionFunc)
-    mSecondaryActionFunc(this);
-  
   UpdateRects();
-  
+
   IControl::OnEndAnimation();
 }
 
@@ -374,49 +372,34 @@ void IVTabSwitchControl::DrawWidget(IGraphics& g)
   }
 }
 
-bool IVTabSwitchControl::IsHit(float x, float y) const
+int IVTabSwitchControl::GetButtonForPoint(float x, float y) const
 {
-  bool hit = false;
-  
   for (int i = 0; i < mNumStates; i++)
   {
-    hit |= mButtons.Get()[i].Contains(x, y);
+    if (mButtons.Get()[i].Contains(x, y))
+      return i;
   }
   
-  return hit;
+  return -1;
+}
+
+bool IVTabSwitchControl::IsHit(float x, float y) const
+{
+  return GetButtonForPoint(x, y) > -1;
 }
 
 void IVTabSwitchControl::OnMouseDown(float x, float y, const IMouseMod& mod)
 {
-  int hit = -1;
-  
-  for (int i = 0; i < mNumStates; i++)
-  {
-    if(mButtons.Get()[i].Contains(x, y))
-    {
-      hit = i;
-      break;
-    }
-  }
-  
-  if(hit > -1)
-    SetValue(((double) hit * (1./(double) (mNumStates-1))));
+  int index = GetButtonForPoint(x, y);
+  if (index > -1)
+    SetValue(((double) index * (1./(double) (mNumStates-1))));
   
   SetDirty(true);
 }
 
 void IVTabSwitchControl::OnMouseOver(float x, float y, const IMouseMod& mod)
 {
-  mMouseOverButton = -1;
-  
-  for (int i = 0; i < mNumStates; i++)
-  {
-    if(mButtons.Get()[i].Contains(x, y))
-    {
-      mMouseOverButton = i;
-      break;
-    }
-  }
+  mMouseOverButton = GetButtonForPoint(x, y);
   
   ISwitchControlBase::OnMouseOver(x, y, mod);
   
@@ -470,72 +453,20 @@ void IVRadioButtonControl::DrawWidget(IGraphics& g)
   }
 }
 
-bool IVRadioButtonControl::IsHit(float x, float y) const
+int IVRadioButtonControl::GetButtonForPoint(float x, float y) const
 {
-  if(mOnlyButtonsRespondToMouse)
+  if (mOnlyButtonsRespondToMouse)
   {
-    bool hit = false;
-    
     for (int i = 0; i < mNumStates; i++)
     {
-      hit |= mButtons.Get()[i].FracRectHorizontal(0.25f).Contains(x, y);
+      if (mButtons.Get()[i].FracRectHorizontal(0.25f).Contains(x, y))
+        return i;
     }
     
-    return hit;
+    return -1;
   }
   else
-    return IVTabSwitchControl::IsHit(x, y);
-}
-
-void IVRadioButtonControl::OnMouseDown(float x, float y, const IMouseMod& mod)
-{
-  int hit = -1;
-  
-  for (int i = 0; i < mNumStates; i++)
-  {
-    if(mButtons.Get()[i].FracRectHorizontal(0.25f).Contains(x, y))
-    {
-      hit = i;
-      break;
-    }
-  }
-  
-  if(hit > -1)
-    SetValue(((double) hit * (1./(double) (mNumStates-1))));
-  
-  SetDirty(true);
-}
-
-void IVRadioButtonControl::OnMouseOver(float x, float y, const IMouseMod& mod)
-{
-  mMouseOverButton = -1;
-  
-  for (int i = 0; i < mNumStates; i++)
-  {
-    if(mButtons.Get()[i].FracRectHorizontal(0.25f).Contains(x, y))
-    {
-      mMouseOverButton = i;
-      break;
-    }
-  }
-  
-  IVTabSwitchControl::OnMouseOver(x, y, mod);
-  
-  SetDirty(false);
-}
-
-void IVRadioButtonControl::OnResize()
-{
-  SetTargetRECT(MakeRects(mRECT));
-  
-  mButtons.Resize(0);
-  
-  for (int i = 0; i < mNumStates; i++)
-  {
-    mButtons.Add(mWidgetBounds.SubRect(mDirection, mNumStates, i));
-  }
-  
-  SetDirty(false);
+    return IVTabSwitchControl::GetButtonForPoint(x, y);
 }
 
 IVKnobControl::IVKnobControl(const IRECT& bounds, int paramIdx, const char* label, const IVStyle& style, bool valueIsEditable, bool valueInWidget, float a1, float a2, float aAnchor,  EDirection direction, double gearing)
@@ -582,7 +513,7 @@ void IVKnobControl::DrawWidget(IGraphics& g)
   
   const float cx = mWidgetBounds.MW(), cy = mWidgetBounds.MH();
   
-  if(!IsGrayed())
+  if(!IsDisabled())
   {
     /*TODO: constants! */
     const float v = mAngle1 + ((float) GetValue() * (mAngle2 - mAngle1));
@@ -723,7 +654,7 @@ void IVSliderControl::DrawWidget(IGraphics& g)
   
   float cx, cy;
   
-  const float offset = (mStyle.drawShadows && mShape != EVShape::Ellipse /* TODO? */) ? mStyle.shadowOffset * 0.5f : 0.;
+  const float offset = (mStyle.drawShadows && mShape != EVShape::Ellipse /* TODO? */) ? mStyle.shadowOffset * 0.5f : 0.f;
   
   if(mDirection == EDirection::Vertical)
   {
@@ -865,7 +796,7 @@ IRECT IVRangeSliderControl::GetHandleBounds(int trackIdx)
 {
   IRECT filledTrack = mTrackBounds.Get()[trackIdx].FracRect(mDirection, (float) GetValue(trackIdx));
   float cx, cy;
-  const float offset = (mStyle.drawShadows && mShape != EVShape::Ellipse /* TODO? */) ? mStyle.shadowOffset * 0.5f : 0.;
+  const float offset = (mStyle.drawShadows && mShape != EVShape::Ellipse /* TODO? */) ? mStyle.shadowOffset * 0.5f : 0.f;
   if(mDirection == EDirection::Vertical)
   {
     cx = filledTrack.MW() + offset;
@@ -969,12 +900,12 @@ void IVXYPadControl::Draw(IGraphics& g)
 
 void IVXYPadControl::DrawWidget(IGraphics& g)
 {
-  float xpos = GetValue(0) * mWidgetBounds.W();
-  float ypos = GetValue(1) * mWidgetBounds.H();
+  float xpos = static_cast<float>(GetValue(0)) * mWidgetBounds.W();
+  float ypos = static_cast<float>(GetValue(1)) * mWidgetBounds.H();
   
   g.DrawVerticalLine(GetColor(kSH), mWidgetBounds, 0.5);
   g.DrawHorizontalLine(GetColor(kSH), mWidgetBounds, 0.5);
-  g.PathClipRegion(mWidgetBounds.GetPadded(-0.5 * mStyle.frameThickness));
+  g.PathClipRegion(mWidgetBounds.GetPadded(-0.5f * mStyle.frameThickness));
   DrawPressableEllipse(g, IRECT(mWidgetBounds.L + xpos-mHandleRadius, mWidgetBounds.B - ypos-mHandleRadius, mWidgetBounds.L + xpos+mHandleRadius,  mWidgetBounds.B -ypos+mHandleRadius), mMouseDown, mMouseIsOver);
 }
 
@@ -1043,7 +974,7 @@ void IVPlotControl::Draw(IGraphics& g)
       {
         auto v = mPlots[p].func(((float)i/(mPoints.size() -1.f)));
         v = (v - mMin) / (mMax-mMin);
-        mPoints[i] = v;
+        mPoints[i] = static_cast<float>(v);
       }
       
       g.DrawData(mPlots[p].color, mWidgetBounds, mPoints.data(), (int) mPoints.size(), nullptr, nullptr, mStyle.frameThickness);
