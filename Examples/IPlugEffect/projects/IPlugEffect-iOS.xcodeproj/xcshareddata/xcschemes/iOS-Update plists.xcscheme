@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4F78BE0122E73D0800AD537E"
-               BuildableName = "AUv3Framework.framework"
-               BlueprintName = "AUv3Framework"
-               ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
+               BlueprintIdentifier = "B87FD2032351C90C00CF7307"
+               BuildableName = "Update plists"
+               BlueprintName = "Update plists"
+               ReferencedContainer = "container:IPlugEffect-iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -40,15 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4F78BE0122E73D0800AD537E"
-            BuildableName = "AUv3Framework.framework"
-            BlueprintName = "AUv3Framework"
-            ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -59,10 +50,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4F78BE0122E73D0800AD537E"
-            BuildableName = "AUv3Framework.framework"
-            BlueprintName = "AUv3Framework"
-            ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
+            BlueprintIdentifier = "B87FD2032351C90C00CF7307"
+            BuildableName = "Update plists"
+            BlueprintName = "Update plists"
+            ReferencedContainer = "container:IPlugEffect-iOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

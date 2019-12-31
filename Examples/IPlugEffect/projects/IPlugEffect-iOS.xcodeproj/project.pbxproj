@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		B87FD2032351C90C00CF7307 /* PLists */ = {
+		B87FD2032351C90C00CF7307 /* Update plists */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = B87FD2062351C90C00CF7307 /* Build configuration list for PBXAggregateTarget "PLists" */;
+			buildConfigurationList = B87FD2062351C90C00CF7307 /* Build configuration list for PBXAggregateTarget "Update plists" */;
 			buildPhases = (
 				B87FD2072351C91100CF7307 /* ShellScript */,
 			);
 			dependencies = (
 			);
-			name = PLists;
+			name = "Update plists";
 			productName = PLists;
 		};
 /* End PBXAggregateTarget section */
@@ -731,7 +731,7 @@
 				91236D0C1B08F42B00734C5E /* App */,
 				91236D761B08F59300734C5E /* AUv3 */,
 				4FA61F6D22E899B500A92C58 /* AUv3Framework */,
-				B87FD2032351C90C00CF7307 /* PLists */,
+				B87FD2032351C90C00CF7307 /* Update plists */,
 			);
 		};
 /* End PBXProject section */
@@ -859,7 +859,7 @@
 		};
 		B87FD2092351C94400CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD2032351C90C00CF7307 /* PLists */;
+			target = B87FD2032351C90C00CF7307 /* Update plists */;
 			targetProxy = B87FD2082351C94400CF7307 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1315,7 +1315,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B87FD2062351C90C00CF7307 /* Build configuration list for PBXAggregateTarget "PLists" */ = {
+		B87FD2062351C90C00CF7307 /* Build configuration list for PBXAggregateTarget "Update plists" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B87FD2042351C90C00CF7307 /* Debug */,

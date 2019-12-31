@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4F78BE0122E73D0800AD537E"
-               BuildableName = "AUv3Framework.framework"
-               BlueprintName = "AUv3Framework"
+               BlueprintIdentifier = "4FC3EFC32086C0A600BD11FA"
+               BuildableName = "IPlugEffectVST3Controller.a"
+               BlueprintName = "VST3C"
                ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -43,9 +43,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4F78BE0122E73D0800AD537E"
-            BuildableName = "AUv3Framework.framework"
-            BlueprintName = "AUv3Framework"
+            BlueprintIdentifier = "4FC3EFC32086C0A600BD11FA"
+            BuildableName = "IPlugEffectVST3Controller.a"
+            BlueprintName = "VST3C"
             ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -59,9 +59,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4F78BE0122E73D0800AD537E"
-            BuildableName = "AUv3Framework.framework"
-            BlueprintName = "AUv3Framework"
+            BlueprintIdentifier = "4FC3EFC32086C0A600BD11FA"
+            BuildableName = "IPlugEffectVST3Controller.a"
+            BlueprintName = "VST3C"
             ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

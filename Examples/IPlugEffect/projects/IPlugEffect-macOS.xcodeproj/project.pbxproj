@@ -22,15 +22,15 @@
 			name = All;
 			productName = "AllOSX_32&64_intel";
 		};
-		B87FD1E62351C6F900CF7307 /* PLists */ = {
+		B87FD1E62351C6F900CF7307 /* Update plists */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = B87FD1ED2351C6F900CF7307 /* Build configuration list for PBXAggregateTarget "PLists" */;
+			buildConfigurationList = B87FD1ED2351C6F900CF7307 /* Build configuration list for PBXAggregateTarget "Update plists" */;
 			buildPhases = (
 				B87FD1EE2351C71300CF7307 /* ShellScript */,
 			);
 			dependencies = (
 			);
-			name = PLists;
+			name = "Update plists";
 			productName = PLists;
 		};
 /* End PBXAggregateTarget section */
@@ -2091,7 +2091,7 @@
 				4FC3EFC32086C0A600BD11FA /* VST3C */,
 				4F78BE0122E73D0800AD537E /* AUv3Framework */,
 				4F3EE1BA231438D000004786 /* AUv3App */,
-				B87FD1E62351C6F900CF7307 /* PLists */,
+				B87FD1E62351C6F900CF7307 /* Update plists */,
 			);
 		};
 /* End PBXProject section */
@@ -2739,42 +2739,42 @@
 		};
 		B87FD1F02351C74300CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1EF2351C74300CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD1F22351C76C00CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1F12351C76C00CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD1F42351C76E00CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1F32351C76E00CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD1F62351C77100CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1F52351C77100CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD1F82351C77600CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1F72351C77600CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD1FA2351C77A00CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1F92351C77A00CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD1FE2351C78000CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD1FD2351C78000CF7307 /* PBXContainerItemProxy */;
 		};
 		B87FD2022351C78700CF7307 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B87FD1E62351C6F900CF7307 /* PLists */;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
 			targetProxy = B87FD2012351C78700CF7307 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -4200,7 +4200,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B87FD1ED2351C6F900CF7307 /* Build configuration list for PBXAggregateTarget "PLists" */ = {
+		B87FD1ED2351C6F900CF7307 /* Build configuration list for PBXAggregateTarget "Update plists" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B87FD1E72351C6F900CF7307 /* Debug */,
