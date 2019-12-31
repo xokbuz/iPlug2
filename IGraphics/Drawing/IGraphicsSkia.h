@@ -61,9 +61,6 @@ public:
   void* GetDrawContext() override { return (void*) mCanvas; }
 
   bool BitmapExtSupported(const char* ext) override;
-  
-  void ReleaseBitmap(const IBitmap& bitmap) override { } // NO-OP
-  void RetainBitmap(const IBitmap& bitmap, const char * cacheName) override { } // NO-OP
 
 protected:
   APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) override;

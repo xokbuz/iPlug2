@@ -1449,7 +1449,7 @@ protected:
    * @return bool* /todo */
   virtual bool LoadAPIFont(const char* fontID, const PlatformFontPtr& font) = 0;
 
-  /** /todo */
+  /** Specialized in IGraphicsCanvas drawing backend */
   virtual bool AssetsLoaded() { return true; }
     
   /** Utility used by SearchImageResource/SearchBitmapInCache
@@ -1500,7 +1500,7 @@ protected:
    * @param rect /todo
    * @param tx /todo
    * @param ty /todo */
-  void CalulateTextRotation(const IText& text, const IRECT& bounds, IRECT& rect, double& tx, double& ty) const;
+  void CalculateTextRotation(const IText& text, const IRECT& bounds, IRECT& rect, double& tx, double& ty) const;
   
   /** @return float /todo */
   virtual float GetBackingPixelScale() const = 0;
