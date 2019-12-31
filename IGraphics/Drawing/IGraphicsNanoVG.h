@@ -110,8 +110,6 @@ public:
   void DeleteFBO(NVGframebuffer* pBuffer);
   void DeleteImage(int nvgImageID);
     
-  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
-
 protected:
   APIBitmap* LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext) override;
   APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) override;
@@ -126,6 +124,9 @@ protected:
   void DoDrawText(const IText& text, const char* str, const IRECT& bounds, const IBlend* pBlend) override;
 
 private:
+    
+  int RowBytesForWidth(int width) override { return width * 4; }
+
   void PrepareAndMeasureText(const IText& text, const char* str, IRECT& r, double& x, double & y) const;
   void PathTransformSetMatrix(const IMatrix& m) override;
   void SetClipRegion(const IRECT& r) override;

@@ -479,11 +479,6 @@ bool IGraphicsCanvas::AssetsLoaded()
   return true;
 }
 
-void IGraphicsCanvas::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
-{
-  ResizeRawBitmap(bitmap, width, height, 0, false, 3, 0, 1, 2);
-}
-
 APIBitmap* IGraphicsCanvas::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
   APIBitmap* pBitmap = CreateAPIBitmap(bitmap.W(), bitmap.H(), GetScreenScale(), GetDrawScale());
@@ -509,7 +504,7 @@ void IGraphicsCanvas::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& raw
   val imageData = context.call<val>("getImageData", 0, 0, width, height);
   val pixelData = imageData["data"];
  
-  ResizeRawBitmap(rawBitmap, width, height, 0, false, 3, 0, 1, 2);
+  CreateRawBitmap(rawBitmap, width, height);
   
   // Copy pixels from context
   if (rawBitmap.W() == width && rawBitmap.H() == height)

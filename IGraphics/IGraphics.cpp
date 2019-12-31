@@ -1749,9 +1749,9 @@ void IGraphics::ApplyLayerDropShadow(ILayerPtr& layer, const IShadow& shadow)
     normFactor += kernel.Get()[i] + kernel.Get()[i];
   
   // Do blur
-  uint8_t* asRows = temp1.mData.Get() + temp1.mOrder[0];
+  uint8_t* asRows = temp1.mData.Get() + ColorOrderA;
   uint8_t* inRows = flipped ? asRows + stride3 * (height - 1) : asRows;
-  uint8_t* asCols = temp2.Get() + temp1.mOrder[0];
+  uint8_t* asCols = temp2.Get() + ColorOrderA;
   
   GaussianBlurSwap(asCols, inRows, kernel.Get(), width, height, stride1, stride2, iSize, normFactor);
   GaussianBlurSwap(asRows, asCols, kernel.Get(), height, width, stride3, stride1, iSize, normFactor);

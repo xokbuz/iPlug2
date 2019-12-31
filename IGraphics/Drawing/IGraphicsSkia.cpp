@@ -686,19 +686,6 @@ void IGraphicsSkia::UpdateLayer()
   mCanvas = mLayers.empty() ? mSurface->getCanvas() : mLayers.top()->GetAPIBitmap()->GetBitmap()->mSurface->getCanvas();
 }
 
-static int CalcRowBytes(int width)
-{
-  width = ((width + 7) & (-8));
-  return width * sizeof(uint32_t);
-}
-
-void IGraphicsSkia::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
-{
-  int align = CalcRowBytes(width) - (width * 4);
-
-  ResizeRawBitmap(bitmap, width, height, align, false, 3, 0, 1, 2);
-}
-
 APIBitmap* IGraphicsSkia::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
   SkImageInfo info = SkImageInfo::MakeN32Premul(bitmap.W(), bitmap.H());
@@ -718,7 +705,7 @@ void IGraphicsSkia::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBi
   if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
     SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-    pDrawable->mSurface->readPixels(info, rawBitmap.Get(), CalcRowBytes(width), 0, 0);
+    pDrawable->mSurface->readPixels(info, rawBitmap.Get(), RowBytesForWidth(width), 0, 0);
   }
 }
 
@@ -727,7 +714,7 @@ void IGraphicsSkia::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IS
   SkiaDrawable* pDrawable = layer->GetAPIBitmap()->GetBitmap();
   int width = layer->GetAPIBitmap()->GetWidth();
   int height = layer->GetAPIBitmap()->GetHeight();
-  int rowBytes = CalcRowBytes(width);
+  int rowBytes = RowBytesForWidth(width);
   double scale = layer->GetAPIBitmap()->GetDrawScale() * layer->GetAPIBitmap()->GetScale();
   
   SkCanvas* pCanvas = pDrawable->mSurface->getCanvas();

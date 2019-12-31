@@ -448,15 +448,13 @@ public:
     mW = 0;
     mH = 0;
     mFlipped = false;
-    for (int i = 0; i < 4; i++)
-      mOrder[i] = i;
   }
   
   IColor GetPixel(int x, int y) const
   {
     const uint8_t *pixels = GetPixels(x, y);
     
-    return IColor(pixels[mOrder[0]], pixels[mOrder[1]], pixels[mOrder[2]], pixels[mOrder[3]]);
+    return IColor(pixels[ColorOrderA], pixels[ColorOrderR], pixels[ColorOrderG], pixels[ColorOrderB]);
   }
   
   void SetPixel(int x, int y, IColor color)
@@ -465,10 +463,10 @@ public:
     
     color.Clamp();
     
-    pixels[mOrder[0]] = color.A;
-    pixels[mOrder[1]] = color.R;
-    pixels[mOrder[2]] = color.G;
-    pixels[mOrder[3]] = color.B;
+    pixels[ColorOrderA] = color.A;
+    pixels[ColorOrderR] = color.R;
+    pixels[ColorOrderG] = color.G;
+    pixels[ColorOrderB] = color.B;
   }
   
   bool Flipped() const { return mFlipped; }
@@ -491,7 +489,6 @@ public:
     
 private:
     
-  int mOrder[4];
   bool mFlipped;
     
   /** Bitmap width (in pixels) */

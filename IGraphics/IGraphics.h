@@ -537,6 +537,8 @@ public:
   /** /todo */
   virtual void UpdateLayer() {}
 
+  virtual int RowBytesForWidth(int width) { return width * 4; }
+  
   virtual APIBitmap* GetAPIBitmapFromData(const IRawBitmap& rawBitmap) = 0;
 
   /** /todo
@@ -1415,7 +1417,14 @@ public:
    * @return An ISVG representing the image */
   virtual ISVG LoadSVG(const char* fileNameOrResID, const char* units = "px", float dpi = 72.f);
   
-  virtual void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) = 0;
+  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+  {
+    int align = RowBytesForWidth(width) - width * 4;
+    
+    bitmap.mData.Resize((width * 4 + align) * height);
+    bitmap.mW = width;
+    bitmap.mH = height;
+  }
     
 protected:
   /** /todo
@@ -1433,20 +1442,6 @@ protected:
    * @param drawScale /todo
    * @return APIBitmap* /todo */
   virtual APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) = 0;
-
-  void ResizeRawBitmap(IRawBitmap& bitmap, int width, int height, int align, bool flipped, int a, int r, int g, int b)
-  {
-    bitmap.mFlipped = flipped;
-      
-    bitmap.mData.Resize((width * 4 + align) * height);
-    bitmap.mW = width;
-    bitmap.mH = height;
-    
-    bitmap.mOrder[0] = a;
-    bitmap.mOrder[1] = r;
-    bitmap.mOrder[2] = g;
-    bitmap.mOrder[3] = b;
-  }
     
   /** /todo
    * @param fontID /todo

@@ -102,8 +102,6 @@ protected:
     
   float GetBackingPixelScale() const override { return (float) GetScreenScale(); };
 
-  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
-
 private:
   void PrepareAndMeasureText(const IText& text, const char* str, IRECT& r, LICE_IFont*& pFont) const;
     

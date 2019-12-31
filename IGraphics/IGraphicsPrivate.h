@@ -36,9 +36,29 @@
 
 #include "IPlugPlatform.h"
 
+#define BITMAP_COLOR_ORDER(r, g, b, a)\
+BEGIN_IPLUG_NAMESPACE \
+BEGIN_IGRAPHICS_NAMESPACE \
+const static int ColorOrderR = r; \
+const static int ColorOrderG = g; \
+const static int ColorOrderB = b; \
+const static int ColorOrderA = a; \
+END_IPLUG_NAMESPACE \
+END_IGRAPHICS_NAMESPACE
+
 #ifdef IGRAPHICS_AGG
   #include "IGraphicsAGG_src.h"
   #define BITMAP_DATA_TYPE agg::pixel_map*
+  BEGIN_IPLUG_NAMESPACE
+  BEGIN_IGRAPHICS_NAMESPACE
+  #ifdef OS_WIN
+  using AGGColorOrder = agg::order_bgra;
+  #elif defined OS_MAC
+  using AGGColorOrder = agg::order_argb;
+  #endif
+  END_IPLUG_NAMESPACE
+  END_IGRAPHICS_NAMESPACE
+  BITMAP_COLOR_ORDER(AGGColorOrder().R, AGGColorOrder().G, AGGColorOrder().B, AGGColorOrder().A);
 #elif defined IGRAPHICS_CAIRO
   #if defined OS_MAC || defined OS_LINUX
     #include "cairo/cairo.h"
@@ -47,9 +67,11 @@
   #else
     #error NOT IMPLEMENTED
   #endif
+  BITMAP_COLOR_ORDER(0, 1, 2, 3)
   #define BITMAP_DATA_TYPE cairo_surface_t*
 #elif defined IGRAPHICS_NANOVG
   #define BITMAP_DATA_TYPE int;
+  BITMAP_COLOR_ORDER(0, 1, 2, 3)
 #elif defined IGRAPHICS_SKIA
   #include "SkImage.h"
   #include "SkSurface.h"
@@ -59,13 +81,16 @@
     sk_sp<SkImage> mImage;
     sk_sp<SkSurface> mSurface;
   };
+  BITMAP_COLOR_ORDER(0, 1, 2, 3)
   #define BITMAP_DATA_TYPE SkiaDrawable*
 #elif defined IGRAPHICS_LICE
   #include "lice.h"
   #define BITMAP_DATA_TYPE LICE_IBitmap*
+  BITMAP_COLOR_ORDER(LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B, LICE_PIXEL_A)
 #elif defined IGRAPHICS_CANVAS
   #include <emscripten.h>
   #include <emscripten/val.h>
+  BITMAP_COLOR_ORDER(0, 1, 2, 3)
   #define BITMAP_DATA_TYPE emscripten::val*
 #else // NO_IGRAPHICS
   #define BITMAP_DATA_TYPE void*;

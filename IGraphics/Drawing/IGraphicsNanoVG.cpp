@@ -352,15 +352,6 @@ APIBitmap* IGraphicsNanoVG::CreateAPIBitmap(int width, int height, int scale, do
   return pAPIBitmap;
 }
 
-void IGraphicsNanoVG::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
-{
-#if defined(IGRAPHICS_GL)
-  ResizeRawBitmap(bitmap, width, height, 0, true, 3, 0, 1, 2);
-#else
-  ResizeRawBitmap(bitmap, width, height, 0, false, 3, 0, 1, 2);
-#endif
-}
-
 APIBitmap* IGraphicsNanoVG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
   return new Bitmap(this, mVG, bitmap.W(), bitmap.H(), bitmap.Get(), GetScreenScale(), GetDrawScale());

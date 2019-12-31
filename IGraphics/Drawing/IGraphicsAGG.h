@@ -48,10 +48,8 @@ private:
   };
   
 #ifdef OS_WIN
-  using PixelOrder = agg::order_bgra;
   using PixelMapType = agg::pixel_map_win32;
 #elif defined OS_MAC
-  using PixelOrder = agg::order_argb;
   using PixelMapType = agg::pixel_map_mac;
 #else
 #error NOT IMPLEMENTED
@@ -59,11 +57,11 @@ private:
   using SpanAllocatorType = agg::span_allocator<agg::rgba8>;
   using InterpolatorType = agg::span_interpolator_linear<>;
   // Pre-multiplied source types
-  using BlenderPreType = agg::comp_op_adaptor_rgba_pre<agg::rgba8, PixelOrder>;
+  using BlenderPreType = agg::comp_op_adaptor_rgba_pre<agg::rgba8, AGGColorOrder>;
   using PixfmtPreType = agg::pixfmt_custom_blend_rgba<BlenderPreType, agg::rendering_buffer>;
   using RenbasePreType = agg::renderer_base <PixfmtPreType>;
    // Non pre-multiplied source types
-  using BlenderType = agg::comp_op_adaptor_rgba<agg::rgba8, PixelOrder>;
+  using BlenderType = agg::comp_op_adaptor_rgba<agg::rgba8, AGGColorOrder>;
   using PixfmtType = agg::pixfmt_custom_blend_rgba<BlenderType, agg::rendering_buffer>;
   using RenbaseType = agg::renderer_base <PixfmtType>;
   // Image bitmap types
@@ -254,8 +252,6 @@ public:
   void EndFrame() override;
   
   bool BitmapExtSupported(const char* ext) override;
-
-  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
 
 protected:
   APIBitmap* LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext) override;

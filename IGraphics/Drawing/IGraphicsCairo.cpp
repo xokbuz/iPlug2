@@ -220,11 +220,9 @@ bool IGraphicsCairo::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
-void IGraphicsCairo::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+int IGraphicsCairo::RowBytesForWidth(int width)
 {
-  int align = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width) - (width * 4);
-    
-  ResizeRawBitmap(bitmap, width, height, align, false, 3, 0, 1, 2);
+  return cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 }
 
 cairo_surface_t* CreateSurfaceFromData(const IRawBitmap& bitmap)

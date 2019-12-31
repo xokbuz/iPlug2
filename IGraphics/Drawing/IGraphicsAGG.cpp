@@ -489,13 +489,6 @@ bool IGraphicsAGG::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
-void IGraphicsAGG::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
-{
-    int align = 0;//pBitmap->GetBitmap()->row_bytes() - (width * 4);
-
-  ResizeRawBitmap(bitmap, width, height, align, false, PixelOrder().A, PixelOrder().R, PixelOrder().G, PixelOrder().B);
-}
-
 APIBitmap* IGraphicsAGG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
   agg::pixel_map* pBitmap = new agg::pixel_wrapper((unsigned char*)bitmap.Get(), bitmap.W(), bitmap.H(), 32, bitmap.RowSpan());

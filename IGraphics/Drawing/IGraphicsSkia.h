@@ -61,8 +61,6 @@ public:
   void* GetDrawContext() override { return (void*) mCanvas; }
 
   bool BitmapExtSupported(const char* ext) override;
-
-  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
   
   void ReleaseBitmap(const IBitmap& bitmap) override { } // NO-OP
   void RetainBitmap(const IBitmap& bitmap, const char * cacheName) override { } // NO-OP
@@ -83,6 +81,8 @@ protected:
 
   APIBitmap* LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext) override;
 private:
+    
+  int RowBytesForWidth(int width) override { return ((width + 7) & (-8)) * 4; }
     
   void PrepareAndMeasureText(const IText& text, const char* str, IRECT& r, double& x, double & y, SkFont& font) const;
 

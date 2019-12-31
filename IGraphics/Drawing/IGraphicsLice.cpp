@@ -835,11 +835,6 @@ APIBitmap* IGraphicsLice::CreateAPIBitmap(int width, int height, int scale, doub
   return new Bitmap(pBitmap, scale, true);
 }
 
-void IGraphicsLice::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
-{
-  ResizeRawBitmap(bitmap, width, height, 0, false, LICE_PIXEL_A, LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B);
-}
-
 APIBitmap* IGraphicsLice::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
   LICE_IBitmap* pBitmap = new LICE_WrapperBitmap((LICE_pixel *)bitmap.Get(), bitmap.W(), bitmap.H(), bitmap.RowSpan() / 4, false);

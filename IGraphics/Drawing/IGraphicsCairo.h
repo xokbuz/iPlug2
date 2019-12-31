@@ -74,8 +74,6 @@ public:
   void DrawResize() override;
 
   bool BitmapExtSupported(const char* ext) override;
-
-  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
     
 protected:
   APIBitmap* LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext) override;
@@ -94,6 +92,8 @@ protected:
   
 private:
     
+  int RowBytesForWidth(int width) override;
+
   void PrepareAndMeasureText(const IText& text, const char* str, IRECT& r, double& x, double & y, cairo_glyph_t*& pGlyphs, int& numGlyphs) const;
     
   void PathTransformSetMatrix(const IMatrix& m) override;
