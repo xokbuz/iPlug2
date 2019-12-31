@@ -479,6 +479,27 @@ bool IGraphicsCanvas::AssetsLoaded()
   return true;
 }
 
+void IGraphicsCanvas::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+{
+  ResizeRawBitmap(bitmap, width, height, 0, false, 3, 0, 1, 2);
+}
+
+APIBitmap* IGraphicsCanvas::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+{
+  APIBitmap* pBitmap = CreateAPIBitmap(bitmap.W(), bitmap.H(), GetScreenScale(), GetDrawScale());
+    
+  size_t size = bitmap.W() * bitmap.H() * 4;
+  val context = pBitmap->GetBitmap()->call<val>("getContext", std::string("2d"));
+  val pixelDataO = val::global("Uint8ClampedArray").new_(bitmap.W() * bitmap.H() * 4);
+  val pixelDataI = val(typed_memory_view(size, bitmap.Get()));
+  val imageData = val::global("ImageData").new_(pixelDataO, bitmap.W(), bitmap.H());
+
+  pixelDataO.call<void>("set", pixelDataI);
+  context.call<void>("putImageData", imageData, 0, 0);
+    
+  return pBitmap;
+}
+
 void IGraphicsCanvas::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
   int width = pBitmap->GetWidth();

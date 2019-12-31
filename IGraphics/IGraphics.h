@@ -394,6 +394,18 @@ public:
    * @param pBlend - blend operation */
   void DrawBitmap(const IBitmap& bitmap, const IRECT& bounds, int frame = 1, const IBlend* pBlend = 0);
 
+  /** Draws a raw bitmap into the graphics context. NOTE: this helper method handles multi-frame bitmaps, indexable via frame
+   * @param bitmap - the raw bitmap to draw
+   * @param bounds - where to draw the bitmap
+   * @param pBlend - blend operation */
+  void DrawRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend = 0);
+  
+  /** Draw a raw bitmap image to the graphics context, scaling the image to fit the bounds
+   * @param bitmap The raw bitmap image to draw to the graphics context
+   * @param bounds The rectangular region to draw the image in
+   * @param pBlend Optional blend method, see IBlend documentation */
+  void DrawFittedRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend = 0);
+  
   /** Draws mono spaced bitmap text. Useful for identical looking text on multiple platforms.
    * @param bitmap the bitmap containing glyphs to draw
    * @param bounds where to draw the bitmap
@@ -524,6 +536,8 @@ public:
     
   /** /todo */
   virtual void UpdateLayer() {}
+
+  virtual APIBitmap* GetAPIBitmapFromData(const IRawBitmap& rawBitmap) = 0;
 
   /** /todo
    * @param layer /todo
@@ -1401,6 +1415,8 @@ public:
    * @return An ISVG representing the image */
   virtual ISVG LoadSVG(const char* fileNameOrResID, const char* units = "px", float dpi = 72.f);
   
+  virtual void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) = 0;
+    
 protected:
   /** /todo
    * @param fileNameOrResID /todo 

@@ -220,36 +220,50 @@ bool IGraphicsCairo::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
-cairo_surface_t* IGraphicsCairo::CreateCairoDataSurface(const APIBitmap* pBitmap, IRawBitmap& rawBitmap, bool resize)
+void IGraphicsCairo::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
 {
-  cairo_surface_t* pSurface = nullptr;
+  int align = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width) - (width * 4);
+    
+  ResizeRawBitmap(bitmap, width, height, align, false, 3, 0, 1, 2);
+}
+
+cairo_surface_t* CreateSurfaceFromData(const IRawBitmap& bitmap)
+{
   cairo_format_t format = CAIRO_FORMAT_ARGB32;
-  int width = pBitmap->GetWidth();
-  int height = pBitmap->GetHeight();
-  int stride = cairo_format_stride_for_width(format, width);
-  int size = stride * pBitmap->GetHeight();
-  int align = stride - (width * 4);
+  int stride = cairo_format_stride_for_width(format, bitmap.W());
+
+  return cairo_image_surface_create_for_data((unsigned char*) bitmap.Get(), format, bitmap.W(), bitmap.H(), stride);
+}
+
+APIBitmap* IGraphicsCairo::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+{
+  return new Bitmap(CreateSurfaceFromData(bitmap), GetScreenScale(), GetDrawScale());
+}
+
+cairo_surface_t* CreateSurfaceFromDataScaled(IRawBitmap& bitmap, const APIBitmap *pBitmapI)
+{
   double x, y;
-  
-  if (resize)
-  {
-    ResizeRawBitmap(rawBitmap, width, height, align, false, 3, 0, 1, 2);
-    memset(rawBitmap.Get(), 0, size);
-  }
-  
-  if (rawBitmap.W() == width && rawBitmap.H() == height)
-  {
-    pSurface = cairo_image_surface_create_for_data(rawBitmap.Get(), format, width, height, stride);
-    cairo_surface_get_device_scale(pBitmap->GetBitmap(), &x, &y);
-    cairo_surface_set_device_scale(pSurface, x, y);
-  }
-  
+  cairo_surface_t* pSurface = CreateSurfaceFromData(bitmap);
+
+  cairo_surface_get_device_scale(pBitmapI->GetBitmap(), &x, &y);
+  cairo_surface_set_device_scale(pSurface, x, y);
+    
   return pSurface;
 }
 
 void IGraphicsCairo::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
-  cairo_surface_t *pSurface = CreateCairoDataSurface(pBitmap, rawBitmap, true);
+  int width = pBitmap->GetWidth();
+  int height = pBitmap->GetHeight();
+
+  CreateRawBitmap(rawBitmap, width, height);
+    
+  if (rawBitmap.W() != width && rawBitmap.H() != height)
+    return;
+
+  memset(rawBitmap.Get(), 0, rawBitmap.RowSpan() * rawBitmap.H());
+
+  cairo_surface_t* pSurface = CreateSurfaceFromDataScaled(rawBitmap, pBitmap);
   
   if (pSurface)
   {
@@ -259,14 +273,15 @@ void IGraphicsCairo::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawB
     cairo_paint(pContext);
     cairo_pattern_destroy(pPattern);
     cairo_destroy(pContext);
+    cairo_surface_destroy(pSurface);
   }
 }
 
 void IGraphicsCairo::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  cairo_surface_t *pSurface = CreateCairoDataSurface(pBitmap, mask, false);
-  
+  cairo_surface_t* pSurface = CreateSurfaceFromDataScaled(mask, pBitmap);
+
   if (pSurface)
   {
     cairo_t* pContext = cairo_create(pBitmap->GetBitmap());
@@ -288,6 +303,7 @@ void IGraphicsCairo::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const I
     cairo_translate(pContext, shadow.mXOffset, shadow.mYOffset);
     cairo_mask_surface(pContext, pSurface, 0.0, 0.0);
     cairo_destroy(pContext);
+    cairo_surface_destroy(pSurface);
   }  
 }
 

@@ -489,36 +489,55 @@ bool IGraphicsAGG::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
+void IGraphicsAGG::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+{
+    int align = 0;//pBitmap->GetBitmap()->row_bytes() - (width * 4);
+
+  ResizeRawBitmap(bitmap, width, height, align, false, PixelOrder().A, PixelOrder().R, PixelOrder().G, PixelOrder().B);
+}
+
+APIBitmap* IGraphicsAGG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+{
+  agg::pixel_map* pBitmap = new agg::pixel_wrapper((unsigned char*)bitmap.Get(), bitmap.W(), bitmap.H(), 32, bitmap.RowSpan());
+    
+  return new Bitmap(pBitmap, GetScreenScale(), GetDrawScale(), true);
+}
+
 void IGraphicsAGG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int size = height * pBitmap->GetBitmap()->row_bytes();
-  int align = pBitmap->GetBitmap()->row_bytes() - (width * 4);
     
-  ResizeRawBitmap(rawBitmap, width, height, align, false, PixelOrder().A, PixelOrder().R, PixelOrder().G, PixelOrder().B);
+  CreateRawBitmap(rawBitmap, width, height);
     
   if (rawBitmap.W() == width && rawBitmap.H() == height)
-    memcpy(rawBitmap.Get(), pBitmap->GetBitmap()->buf(), size);
+  {
+    const uint8_t* pDataI = pBitmap->GetBitmap()->buf();
+    uint8_t* pDataO = rawBitmap.Get();
+        
+    int rowBytesI = pBitmap->GetBitmap()->row_bytes();
+    int rowBytesO = rawBitmap.RowSpan();
+      
+    for (int i = 0; i < height; i++, pDataI += rowBytesI, pDataO += rowBytesO)
+      memcpy(pDataO, pDataI, width * 4);
+  }
 }
 
 void IGraphicsAGG::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
 {
   const APIBitmap* pBitmap = layer->GetAPIBitmap();
-  agg::pixel_map* pPixMap = pBitmap->GetBitmap();
-  int width = pBitmap->GetWidth();
-  int height = pBitmap->GetHeight();
     
-  if (mask.W() == width && mask.H() == pPixMap->height())
+  if (mask.W() == pBitmap->GetWidth() && mask.H() == pBitmap->GetHeight())
   {
     if (!shadow.mDrawForeground)
     {
       pBitmap->GetBitmap()->clear(0);
     }
     
+    // N.B. shadowLayer owns shadowBitmap and will delete it
+
     IRECT bounds(layer->Bounds());
-    agg::pixel_wrapper* shadowSource = new agg::pixel_wrapper(mask.Get(), width, height, pPixMap->bpp(), pPixMap->row_bytes());
-    APIBitmap* shadowBitmap = new Bitmap(shadowSource, pBitmap->GetScale(), pBitmap->GetDrawScale(), true);
+    APIBitmap* shadowBitmap = GetAPIBitmapFromData(mask);
     IBitmap bitmap(shadowBitmap, 1, false);
     ILayer shadowLayer(shadowBitmap, layer->Bounds(), nullptr, IRECT());
       

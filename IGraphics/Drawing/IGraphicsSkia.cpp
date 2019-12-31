@@ -50,9 +50,9 @@ class IGraphicsSkia::Bitmap : public APIBitmap
 {
 public:
   Bitmap(GrContext* context, int width, int height, int scale, float drawScale);
-  Bitmap(const char* path, double sourceScale);
-  Bitmap(const void* pData, int size, double sourceScale);
-  Bitmap(sk_sp<SkImage>, double sourceScale);
+  Bitmap(const char* path, int scale);
+  Bitmap(const void* pData, int size, int scale);
+  Bitmap(sk_sp<SkImage>, int scale, float drawScale = 1.f);
 
 private:
   SkiaDrawable mDrawable;
@@ -67,32 +67,30 @@ IGraphicsSkia::Bitmap::Bitmap(GrContext* context, int width, int height, int sca
   mDrawable.mSurface = SkSurface::MakeRasterN32Premul(width, height);
 #endif
   mDrawable.mIsSurface = true;
-  
   SetBitmap(&mDrawable, width, height, scale, drawScale);
 }
 
-IGraphicsSkia::Bitmap::Bitmap(const char* path, double sourceScale)
+IGraphicsSkia::Bitmap::Bitmap(const char* path, int scale)
 {
   auto data = SkData::MakeFromFileName(path);
   mDrawable.mImage = SkImage::MakeFromEncoded(data);
-  
   mDrawable.mIsSurface = false;
-  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), sourceScale, 1.f);
+  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), scale, 1.f);
 }
 
-IGraphicsSkia::Bitmap::Bitmap(const void* pData, int size, double sourceScale)
+IGraphicsSkia::Bitmap::Bitmap(const void* pData, int size, int scale)
 {
   auto data = SkData::MakeWithoutCopy(pData, size);
   mDrawable.mImage = SkImage::MakeFromEncoded(data);
-  
   mDrawable.mIsSurface = false;
-  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), sourceScale, 1.f);
+  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), scale, 1.f);
 }
 
-IGraphicsSkia::Bitmap::Bitmap(sk_sp<SkImage> image, double sourceScale)
+IGraphicsSkia::Bitmap::Bitmap(sk_sp<SkImage> image, int scale, float drawScale)
 {
   mDrawable.mImage = image;
-  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), sourceScale, 1.f);
+  mDrawable.mIsSurface = false;
+  SetBitmap(&mDrawable, mDrawable.mImage->width(), mDrawable.mImage->height(), scale, drawScale);
 }
 
 struct IGraphicsSkia::Font
@@ -694,20 +692,33 @@ static int CalcRowBytes(int width)
   return width * sizeof(uint32_t);
 }
 
+void IGraphicsSkia::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+{
+  int align = CalcRowBytes(width) - (width * 4);
+
+  ResizeRawBitmap(bitmap, width, height, align, false, 3, 0, 1, 2);
+}
+
+APIBitmap* IGraphicsSkia::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+{
+  SkImageInfo info = SkImageInfo::MakeN32Premul(bitmap.W(), bitmap.H());
+  SkPixmap pixmap(info, bitmap.Get(), bitmap.RowSpan());
+  sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
+  return new Bitmap(image, GetScreenScale(), GetDrawScale());
+}
+
 void IGraphicsSkia::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
   SkiaDrawable* pDrawable = pBitmap->GetBitmap();
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int rowBytes = CalcRowBytes(width);
-  int align = rowBytes - (width * 4);
 
-  ResizeRawBitmap(rawBitmap, width, height, align, false, 3, 0, 1, 2);
+  CreateRawBitmap(rawBitmap, width, height);
    
   if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
     SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-    pDrawable->mSurface->readPixels(info, rawBitmap.Get(), rowBytes, 0, 0);
+    pDrawable->mSurface->readPixels(info, rawBitmap.Get(), CalcRowBytes(width), 0, 0);
   }
 }
 

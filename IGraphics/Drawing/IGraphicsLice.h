@@ -91,6 +91,7 @@ protected:
 
   bool LoadAPIFont(const char* fontID, const PlatformFontPtr& font) override;
 
+  APIBitmap* GetAPIBitmapFromData(const IRawBitmap& bitmap) override;
   void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) override;
   void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
@@ -100,6 +101,8 @@ protected:
   void EndFrame() override;
     
   float GetBackingPixelScale() const override { return (float) GetScreenScale(); };
+
+  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
 
 private:
   void PrepareAndMeasureText(const IText& text, const char* str, IRECT& r, LICE_IFont*& pFont) const;

@@ -835,17 +835,36 @@ APIBitmap* IGraphicsLice::CreateAPIBitmap(int width, int height, int scale, doub
   return new Bitmap(pBitmap, scale, true);
 }
 
+void IGraphicsLice::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+{
+  ResizeRawBitmap(bitmap, width, height, 0, false, LICE_PIXEL_A, LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B);
+}
+
+APIBitmap* IGraphicsLice::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+{
+  LICE_IBitmap* pBitmap = new LICE_WrapperBitmap((LICE_pixel *)bitmap.Get(), bitmap.W(), bitmap.H(), bitmap.RowSpan() / 4, false);
+    
+  return new Bitmap(pBitmap, GetScreenScale(), false);
+}
+
 void IGraphicsLice::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int align = (pBitmap->GetBitmap()->getRowSpan() - width) * 4;
-  int size = pBitmap->GetBitmap()->getRowSpan() * height * 4;
 
-  ResizeRawBitmap(rawBitmap, width, height, align, false, LICE_PIXEL_A, LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B);
+  CreateRawBitmap(rawBitmap, width, height);
     
   if (rawBitmap.W() == width && rawBitmap.H() == height)
-    memcpy(rawBitmap.Get(), pBitmap->GetBitmap()->getBits(), size);
+  {
+    const uint8_t* pDataI = reinterpret_cast<const uint8_t *>(pBitmap->GetBitmap()->getBits());
+    uint8_t* pDataO = rawBitmap.Get();
+      
+    int rowBytesI = pBitmap->GetBitmap()->getRowSpan() * 4;
+    int rowBytesO = rawBitmap.RowSpan();
+
+    for (int i = 0; i < height; i++, pDataI += rowBytesI, pDataO += rowBytesO)
+      memcpy(pDataO, pDataI, width * 4);
+  }
 }
 
 void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow)
@@ -855,7 +874,8 @@ void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IS
 
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int stride = pLayerBitmap->getRowSpan() * 4;
+  int strideI = mask.RowSpan();
+  int strideO = pLayerBitmap->getRowSpan() * 4;
 
   if (mask.W() == width && mask.H() == height)
   {
@@ -863,8 +883,8 @@ void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IS
     int y = std::round(shadow.mYOffset * GetScreenScale());
     int nRows = width - std::abs(y);
     int nCols = height - std::abs(x);
-    LICE_pixel_chan* in = mask.Get() + (std::max(-x, 0) * 4) + (std::max(-y, 0) * stride);
-    LICE_pixel_chan* out = ((LICE_pixel_chan*) pLayerBitmap->getBits()) + (std::max(x, 0) * 4) + (std::max(y, 0) * stride);
+    LICE_pixel_chan* in = mask.Get() + (std::max(-x, 0) * 4) + (std::max(-y, 0) * strideI);
+    LICE_pixel_chan* out = ((LICE_pixel_chan*) pLayerBitmap->getBits()) + (std::max(x, 0) * 4) + (std::max(y, 0) * strideO);
     
     // Pre-multiply color components
     IColor color = shadow.mPattern.GetStop(0).mColor;
@@ -878,7 +898,7 @@ void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IS
     {
       LICE_Clear(pLayerBitmap, 0);
     
-      for (int i = 0; i < nRows; i++, in += stride, out += stride)
+      for (int i = 0; i < nRows; i++, in += strideI, out += strideO)
       {
         LICE_pixel_chan* chans = out;
 
@@ -897,7 +917,7 @@ void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IS
     }
     else
     {
-      for (int i = 0; i < nRows; i++, in += stride, out += stride)
+      for (int i = 0; i < nRows; i++, in += strideI, out += strideO)
       {
         LICE_pixel_chan* chans = out;
         

@@ -62,17 +62,20 @@ public:
 
   bool BitmapExtSupported(const char* ext) override;
 
+  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
+  
   void ReleaseBitmap(const IBitmap& bitmap) override { } // NO-OP
   void RetainBitmap(const IBitmap& bitmap, const char * cacheName) override { } // NO-OP
+
+protected:
   APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) override;
 
+  APIBitmap* GetAPIBitmapFromData(const IRawBitmap& bitmap) override;
   void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) override;
   void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
   void UpdateLayer() override;
-    
-protected:
-    
+        
   void DoMeasureText(const IText& text, const char* str, IRECT& bounds) const override;
   void DoDrawText(const IText& text, const char* str, const IRECT& bounds, const IBlend* pBlend) override;
 

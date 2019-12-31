@@ -75,9 +75,9 @@ using namespace igraphics;
 class IGraphicsNanoVG::Bitmap : public APIBitmap
 {
 public:
-  Bitmap(NVGcontext* pContext, const char* path, double sourceScale, int nvgImageID, bool shared = false);
+  Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext, const char* path, int scale, int nvgImageID, bool shared = false);
   Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext, int width, int height, int scale, float drawScale);
-  Bitmap(NVGcontext* pContext, int width, int height, const uint8_t* pData, int scale, float drawScale);
+  Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext, int width, int height, const uint8_t* pData, int scale, float drawScale);
   virtual ~Bitmap();
   NVGframebuffer* GetFBO() const { return mFBO; }
 private:
@@ -87,16 +87,17 @@ private:
   bool mSharedTexture = false;
 };
 
-IGraphicsNanoVG::Bitmap::Bitmap(NVGcontext* pContext, const char* path, double sourceScale, int nvgImageID, bool shared)
+IGraphicsNanoVG::Bitmap::Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext, const char* path, int scale, int nvgImageID, bool shared)
 {
   assert(nvgImageID > 0);
   
+  mGraphics = pGraphics;
   mVG = pContext;
   mSharedTexture = shared;
   int w = 0, h = 0;
   nvgImageSize(mVG, nvgImageID, &w, &h);
   
-  SetBitmap(nvgImageID, w, h, sourceScale, 1.f);
+  SetBitmap(nvgImageID, w, h, scale, 1.f);
 }
 
 IGraphicsNanoVG::Bitmap::Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext, int width, int height, int scale, float drawScale)
@@ -120,10 +121,11 @@ IGraphicsNanoVG::Bitmap::Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext
   SetBitmap(mFBO->image, width, height, scale, drawScale);
 }
 
-IGraphicsNanoVG::Bitmap::Bitmap(NVGcontext* pContext, int width, int height, const uint8_t* pData, int scale, float drawScale)
+IGraphicsNanoVG::Bitmap::Bitmap(IGraphicsNanoVG* pGraphics, NVGcontext* pContext, int width, int height, const uint8_t* pData, int scale, float drawScale)
 {
-  int idx = nvgCreateImageRGBA(pContext, width, height, 0, pData);
+  mGraphics = pGraphics;
   mVG = pContext;
+  int idx = nvgCreateImageRGBA(pContext, width, height, 0, pData);
   SetBitmap(idx, width, height, scale, drawScale);
 }
 
@@ -134,7 +136,7 @@ IGraphicsNanoVG::Bitmap::~Bitmap()
     if(mFBO)
       mGraphics->DeleteFBO(mFBO);
     else
-      nvgDeleteImage(mVG, GetBitmap());
+      mGraphics->DeleteImage(GetBitmap());
   }
 }
 
@@ -229,7 +231,7 @@ IGraphicsNanoVG::~IGraphicsNanoVG()
 {
   StaticStorage<IFontData>::Accessor storage(sFontCache);
   storage.Release();
-  ClearFBOStack();
+  ClearImageStacks();
 }
 
 const char* IGraphicsNanoVG::GetDrawingAPIStr()
@@ -329,7 +331,7 @@ APIBitmap* IGraphicsNanoVG::LoadAPIBitmap(const char* fileNameOrResID, int scale
     idx = nvgCreateImage(mVG, fileNameOrResID, nvgImageFlags);
   }
 
-  return new Bitmap(mVG, fileNameOrResID, scale, idx, location == EResourceLocation::kPreloadedTexture);
+  return new Bitmap(this, mVG, fileNameOrResID, scale, idx, location == EResourceLocation::kPreloadedTexture);
 }
 
 APIBitmap* IGraphicsNanoVG::CreateAPIBitmap(int width, int height, int scale, double drawScale)
@@ -350,17 +352,26 @@ APIBitmap* IGraphicsNanoVG::CreateAPIBitmap(int width, int height, int scale, do
   return pAPIBitmap;
 }
 
+void IGraphicsNanoVG::CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+{
+#if defined(IGRAPHICS_GL)
+  ResizeRawBitmap(bitmap, width, height, 0, true, 3, 0, 1, 2);
+#else
+  ResizeRawBitmap(bitmap, width, height, 0, false, 3, 0, 1, 2);
+#endif
+}
+
+APIBitmap* IGraphicsNanoVG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+{
+  return new Bitmap(this, mVG, bitmap.W(), bitmap.H(), bitmap.Get(), GetScreenScale(), GetDrawScale());
+}
+
 void IGraphicsNanoVG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  bool flipped = false;
   
-#if defined(IGRAPHICS_GL)
-  flipped = true;
-#endif
-    
-  ResizeRawBitmap(rawBitmap, width, height, 0, flipped, 3, 0, 1, 2);
+  CreateRawBitmap(rawBitmap, width, height);
 
   if (rawBitmap.W() == width && rawBitmap.H() == height)
   {
@@ -395,7 +406,7 @@ void IGraphicsNanoVG::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const 
     
     IRECT bounds(layer->Bounds());
     
-    Bitmap maskRawBitmap(mVG, width, height, mask.Get(), pBitmap->GetScale(), pBitmap->GetDrawScale());
+    Bitmap maskRawBitmap(this, mVG, width, height, mask.Get(), pBitmap->GetScale(), pBitmap->GetDrawScale());
     APIBitmap* shadowBitmap = CreateAPIBitmap(width, height, pBitmap->GetScale(), pBitmap->GetDrawScale());
     IBitmap tempLayerBitmap(shadowBitmap, 1, false);
     IBitmap maskBitmap(&maskRawBitmap, 1, false);
@@ -510,7 +521,7 @@ void IGraphicsNanoVG::EndFrame()
 #endif
   
   mInDraw = false;
-  ClearFBOStack();
+  ClearImageStacks();
 }
 
 void IGraphicsNanoVG::DrawBitmap(const IBitmap& bitmap, const IRECT& dest, int srcX, int srcY, const IBlend* pBlend)
@@ -864,17 +875,35 @@ void IGraphicsNanoVG::DeleteFBO(NVGframebuffer* pBuffer)
     nvgDeleteFramebuffer(pBuffer);
   else
   {
-    WDL_MutexLock lock(&mFBOMutex);
+    WDL_MutexLock lock(&mStackMutex);
     mFBOStack.push(pBuffer);
   }
 }
 
-void IGraphicsNanoVG::ClearFBOStack()
+void IGraphicsNanoVG::DeleteImage(int nvgImageID)
 {
-  WDL_MutexLock lock(&mFBOMutex);
+  if (!mInDraw)
+    nvgDeleteImage(mVG, nvgImageID);
+  else
+  {
+    WDL_MutexLock lock(&mStackMutex);
+    mImageStack.push(nvgImageID);
+  }
+}
+
+void IGraphicsNanoVG::ClearImageStacks()
+{
+  WDL_MutexLock lock(&mStackMutex);
+
   while (!mFBOStack.empty())
   {
     nvgDeleteFramebuffer(mFBOStack.top());
     mFBOStack.pop();
+  }
+
+  while (!mImageStack.empty())
+  {
+    nvgDeleteImage(mVG, mImageStack.top());
+    mImageStack.pop();
   }
 }

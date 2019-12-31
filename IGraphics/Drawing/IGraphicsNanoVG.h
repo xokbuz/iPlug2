@@ -108,13 +108,17 @@ public:
   bool BitmapExtSupported(const char* ext) override;
 
   void DeleteFBO(NVGframebuffer* pBuffer);
+  void DeleteImage(int nvgImageID);
     
+  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height) override;
+
 protected:
   APIBitmap* LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext) override;
   APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) override;
 
   bool LoadAPIFont(const char* fontID, const PlatformFontPtr& font) override;
 
+  APIBitmap* GetAPIBitmapFromData(const IRawBitmap& bitmap) override;
   void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) override;
   void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
@@ -126,11 +130,12 @@ private:
   void PathTransformSetMatrix(const IMatrix& m) override;
   void SetClipRegion(const IRECT& r) override;
   void UpdateLayer() override;
-  void ClearFBOStack();
+  void ClearImageStacks();
   
   bool mInDraw = false;
-  WDL_Mutex mFBOMutex;
+  WDL_Mutex mStackMutex;
   std::stack<NVGframebuffer*> mFBOStack; // A stack of FBOs that requires freeing at the end of the frame
+  std::stack<int> mImageStack; // A stack of images that requires freeing at the end of the frame
   StaticStorage<APIBitmap> mBitmapCache; //not actually static (doesn't require retaining or releasing)
   NVGcontext* mVG = nullptr;
   NVGframebuffer* mMainFrameBuffer = nullptr;

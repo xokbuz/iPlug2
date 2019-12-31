@@ -490,6 +490,20 @@ void IGraphics::DrawBitmap(const IBitmap& bitmap, const IRECT& bounds, int bmpSt
   return DrawBitmap(bitmap, bounds, srcX, srcY, pBlend);
 }
 
+void IGraphics::DrawRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend)
+{
+    std::unique_ptr<APIBitmap> pBitmap(GetAPIBitmapFromData(bitmap));
+    IBitmap tempBitmap(pBitmap.get(), 1, false);
+    DrawBitmap(tempBitmap, bounds, 1, pBlend);
+}
+
+void IGraphics::DrawFittedRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend)
+{
+    std::unique_ptr<APIBitmap> pBitmap(GetAPIBitmapFromData(bitmap));
+    IBitmap tempBitmap(pBitmap.get(), 1, false);
+    DrawFittedBitmap(tempBitmap, bounds, pBlend);
+}
+
 void IGraphics::DrawBitmapedText(const IBitmap& bitmap, IRECT& bounds, IText& text, IBlend* pBlend, const char* str, bool vCenter, bool multiline, int charWidth, int charHeight, int charOffset)
 {
   if (CStringHasContents(str))
