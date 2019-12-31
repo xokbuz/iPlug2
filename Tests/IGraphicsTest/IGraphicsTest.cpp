@@ -77,7 +77,7 @@ IGraphicsTest::IGraphicsTest(const InstanceInfo& info)
     int cellIdx = 0;
     
     auto nextCell = [&](){
-      return bounds.GetPadded(-10).GetGridCell(cellIdx++, 4, 6).GetPadded(-5.);
+      return bounds.GetPadded(-10).GetGridCell(cellIdx++, 4, 7).GetPadded(-5.);
     };
     
     pGraphics->AttachPanelBackground(COLOR_GRAY);
@@ -144,7 +144,8 @@ IGraphicsTest::IGraphicsTest(const InstanceInfo& info)
     pGraphics->AttachControl(new TestTextSizeControl(nextCell()));
     pGraphics->AttachControl(new TestMPSControl(nextCell(), smiley));
     pGraphics->AttachControl(new TestGLControl(nextCell()));
-    
+    pGraphics->AttachControl(new TestRawBitmapControl(nextCell()));
+
     WDL_String path;
     // DesktopPath(path);
     path.Set(__FILE__);
