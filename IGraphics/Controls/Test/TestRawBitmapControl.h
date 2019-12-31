@@ -53,10 +53,22 @@ public:
 
   void Draw(IGraphics& g) override
   {
-    IRECT rect = mRECT.GetPadded(-10.f);
+    IRawBitmap transientBitmap;
+    IRECT rect1 = mRECT.GetPadded(-10.f);
+    IRECT rect2 = rect1.GetScaled(g.GetScreenScale());
 
     g.FillRect(COLOR_BLACK, mRECT);
-    g.DrawRawBitmap(mBitmap, rect);
+    g.DrawRawBitmap(mBitmap, rect1);
+      
+    g.CreateRawBitmap(transientBitmap, rect2.W() * 0.3, rect2.H() * 0.3);
+      
+    for (int i = 0; i < transientBitmap.W(); i++)
+    {
+      for (int j = 0; j < transientBitmap.H(); j++)
+        transientBitmap.SetPixel(i, j, IColor(128, 255, 0, 0));
+    }
+      
+    g.DrawRawBitmap(transientBitmap, rect1);
   }
 
 private:
