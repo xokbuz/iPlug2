@@ -67,7 +67,7 @@ END_IGRAPHICS_NAMESPACE
   #else
     #error NOT IMPLEMENTED
   #endif
-  BITMAP_COLOR_ORDER(0, 1, 2, 3)
+  BITMAP_COLOR_ORDER(2, 1, 0, 3)
   #define BITMAP_DATA_TYPE cairo_surface_t*
 #elif defined IGRAPHICS_NANOVG
   #define BITMAP_DATA_TYPE int;

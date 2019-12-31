@@ -463,10 +463,22 @@ public:
     
     color.Clamp();
     
-    pixels[ColorOrderA] = color.A;
-    pixels[ColorOrderR] = color.R;
-    pixels[ColorOrderG] = color.G;
-    pixels[ColorOrderB] = color.B;
+    int A = color.A + 1;
+      
+    if (A != 256)
+    {
+      pixels[ColorOrderA] = color.A;
+      pixels[ColorOrderR] = (color.R * A) >> 8;
+      pixels[ColorOrderG] = (color.G * A) >> 8;
+      pixels[ColorOrderB] = (color.B * A) >> 8;
+    }
+    else
+    {
+      pixels[ColorOrderA] = color.A;
+      pixels[ColorOrderR] = color.R;
+      pixels[ColorOrderG] = color.G;
+      pixels[ColorOrderB] = color.B;
+    }
   }
   
   bool Flipped() const { return mFlipped; }
