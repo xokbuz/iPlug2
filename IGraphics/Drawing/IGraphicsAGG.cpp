@@ -493,7 +493,7 @@ APIBitmap* IGraphicsAGG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
   agg::pixel_map* pBitmap = new agg::pixel_wrapper((unsigned char*)bitmap.Get(), bitmap.W(), bitmap.H(), 32, bitmap.RowSpan());
     
-  return new Bitmap(pBitmap, GetScreenScale(), GetDrawScale(), true);
+  return new Bitmap(pBitmap, GetScreenScale(), GetDrawScale(), false);
 }
 
 void IGraphicsAGG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)

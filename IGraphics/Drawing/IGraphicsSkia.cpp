@@ -688,7 +688,7 @@ void IGraphicsSkia::UpdateLayer()
 
 APIBitmap* IGraphicsSkia::GetAPIBitmapFromData(const IRawBitmap& bitmap)
 {
-  SkImageInfo info = SkImageInfo::MakeN32Premul(bitmap.W(), bitmap.H());
+  SkImageInfo info = SkImageInfo::MakeN32(bitmap.W(), bitmap.H(), kUnpremul_SkAlphaType);
   SkPixmap pixmap(info, bitmap.Get(), bitmap.RowSpan());
   sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
   return new Bitmap(image, GetScreenScale(), GetDrawScale());
