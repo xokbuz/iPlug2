@@ -116,6 +116,12 @@ void IGraphics::SetLayoutOnResize(bool layoutOnResize)
   mLayoutOnResize = layoutOnResize;
 }
 
+void IGraphics::RemoveControlWithTag(int ctrlTag)
+{
+  mControls.DeletePtr(GetControlWithTag(ctrlTag));
+  SetAllControlsDirty();
+}
+
 void IGraphics::RemoveControls(int fromIdx)
 {
   int idx = NControls()-1;
@@ -206,10 +212,10 @@ void IGraphics::AttachPanelBackground(const IPattern& color)
   mControls.Insert(0, pBG);
 }
 
-IControl* IGraphics::AttachControl(IControl* pControl, int controlTag, const char* group)
+IControl* IGraphics::AttachControl(IControl* pControl, int ctrlTag, const char* group)
 {
   pControl->SetDelegate(*GetDelegate());
-  pControl->SetTag(controlTag);
+  pControl->SetTag(ctrlTag);
   pControl->SetGroup(group);
   mControls.Add(pControl);
   return pControl;
@@ -272,12 +278,12 @@ void IGraphics::ShowFPSDisplay(bool enable)
   SetAllControlsDirty();
 }
 
-IControl* IGraphics::GetControlWithTag(int controlTag)
+IControl* IGraphics::GetControlWithTag(int ctrlTag)
 {
   for (auto c = 0; c < NControls(); c++)
   {
     IControl* pControl = GetControl(c);
-    if (pControl->GetTag() == controlTag)
+    if (pControl->GetTag() == ctrlTag)
     {
       return pControl;
     }

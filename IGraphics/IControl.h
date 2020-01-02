@@ -144,7 +144,7 @@ public:
   virtual void OnInit() {}
   
   /** Implement to receive messages sent to the control, see IEditorDelegate:SendControlMsgFromDelegate() */
-  virtual void OnMsgFromDelegate(int messageTag, int dataSize, const void* pData) {};
+  virtual void OnMsgFromDelegate(int msgTag, int dataSize, const void* pData) {};
   
   /** Implement to receive MIDI messages sent to the control if mWantsMidi == true, see IEditorDelegate:SendMidiMsgFromDelegate() */
   virtual void OnMidi(const IMidiMsg& msg) {};
@@ -451,6 +451,9 @@ public:
   /** /todo */
   double GetAnimationProgress() const;
   
+  /** /todo */
+  Milliseconds GetAnimationDuration() const { return mAnimationDuration; }
+    
 #if defined VST3_API || defined VST3C_API
   Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) override { OnContextSelection(tag); return Steinberg::kResultOk; }
 #endif
