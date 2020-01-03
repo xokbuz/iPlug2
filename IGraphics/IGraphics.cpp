@@ -1732,7 +1732,7 @@ void IGraphics::ApplyLayerDropShadow(ILayerPtr& layer, const IShadow& shadow)
   temp2.Resize(temp1.mData.GetSize());
     
   // Form kernel (reference blurSize from zero (which will be no blur))
-  bool flipped = temp1.mFlipped;
+  bool flipped = false;
   float scale = layer->GetAPIBitmap()->GetScale() * layer->GetAPIBitmap()->GetDrawScale();
   float blurSize = std::max(1.f, (shadow.mBlurSize * scale) + 1.f);
   float blurConst = 4.5f / (blurSize * blurSize);

@@ -375,6 +375,10 @@ void IGraphicsNanoVG::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBi
     nvgReadPixels(mVG, pBitmap->GetBitmap(), 0, 0, width, height, raw.Get());
     UpdateLayer();
       
+#ifdef IGRAPHICS_GL
+    raw.Flip();
+#endif
+
     if (!alphaOnly)
       raw.UnPremultiply();
   }

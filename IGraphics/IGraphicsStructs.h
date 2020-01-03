@@ -447,7 +447,6 @@ public:
   {
     mW = 0;
     mH = 0;
-    mFlipped = false;
   }
   
   IColor GetPixel(int x, int y) const
@@ -499,12 +498,12 @@ public:
   
   void UnPremultiply()
   {
-    for (int x = 0; x < mW; x++)
+    for (int y = 0; y < mH; y++)
     {
-      for (int y = 0; y < mH; y++)
+      uint8_t* pixel = PixelPtr(0, y);
+      
+      for (int x = 0; x < mW; x++, pixel +=4)
       {
-        uint8_t* pixel = PixelPtr(x, y);
-        
         int A = pixel[ColorOrderA];
         
         if (A != 0 && A!= 255)
@@ -517,7 +516,18 @@ public:
     }
   }
   
-  bool Flipped() const { return mFlipped; }
+  void Flip()
+  {
+    for (int y = 0; y < (mH >> 1); y++)
+    {
+      uint32_t* pixelL = reinterpret_cast<uint32_t *>(PixelPtr(0, y));
+      uint32_t* pixelH = reinterpret_cast<uint32_t *>(PixelPtr(0, mH - (y + 1)));
+
+      for (int x = 0; x < mW; x++, pixelL++, pixelH++)
+        std::swap(*pixelL, *pixelH);
+    }
+  }
+  
   int RowBytes() const { return mData.GetSize() / mH; }
   int W() const { return mW; }
   int H() const { return mH; }
@@ -548,12 +558,11 @@ private:
     return mData.Get() + x * 4 + y * RowBytes();
   }
   
-  bool mFlipped;
-    
   /** Bitmap width (in pixels) */
   int mW;
   /** Bitmap height (in pixels) */
   int mH;
+  /** Bitmap data */
   RawBitmapData mData;
 };
 
