@@ -454,7 +454,24 @@ public:
   {
     const uint8_t *pixels = GetPixels(x, y);
     
-    return IColor(pixels[ColorOrderA], pixels[ColorOrderR], pixels[ColorOrderG], pixels[ColorOrderB]);
+    int A = pixels[ColorOrderA];
+    int R = pixels[ColorOrderR];
+    int G = pixels[ColorOrderG];
+    int B = pixels[ColorOrderB];
+      
+    if (PixelIsPreMultiplied && (A != 0) && (A != 255))
+    {
+      R = chanDiv(R, A);
+      G = chanDiv(G, A);
+      B = chanDiv(B, A);
+
+      IColor color = IColor(A, R, G, B);
+      color.Clamp();
+    
+      return color;
+    }
+    
+    return IColor(A, R, G, B);
   }
   
   void SetPixel(int x, int y, IColor color)
@@ -463,10 +480,21 @@ public:
     
     color.Clamp();
     
-    pixels[ColorOrderA] = color.A;
-    pixels[ColorOrderR] = color.R;
-    pixels[ColorOrderG] = color.G;
-    pixels[ColorOrderB] = color.B;
+    if (PixelIsPreMultiplied)
+    {
+      int A = color.A;
+      pixels[ColorOrderA] = A;
+      pixels[ColorOrderR] = chanMul(color.R, A);
+      pixels[ColorOrderG] = chanMul(color.G, A);
+      pixels[ColorOrderB] = chanMul(color.B, A);
+    }
+    else
+    {
+      pixels[ColorOrderA] = color.A;
+      pixels[ColorOrderR] = color.R;
+      pixels[ColorOrderG] = color.G;
+      pixels[ColorOrderB] = color.B;
+    }
   }
   
   bool Flipped() const { return mFlipped; }
@@ -488,6 +516,17 @@ public:
   }
     
 private:
+    
+  static int chanMul(int c, int a)
+  {
+    const int c1 = c * a;
+    return (c1 + (c1 >> 8) + 0x80) >> 8;
+  }
+  
+  static int chanDiv(int c, int a)
+  {
+    return ((c * 0xFF) + (a >> 1)) / a;
+  }
     
   bool mFlipped;
     

@@ -36,29 +36,31 @@
 
 #include "IPlugPlatform.h"
 
-#define BITMAP_COLOR_ORDER(r, g, b, a)\
+#define BITMAP_OPTIONS(type, r, g, b, a, pre) \
 BEGIN_IPLUG_NAMESPACE \
 BEGIN_IGRAPHICS_NAMESPACE \
+using BitmapData = type; \
 const static int ColorOrderR = r; \
 const static int ColorOrderG = g; \
 const static int ColorOrderB = b; \
 const static int ColorOrderA = a; \
+const static int PixelGetIsFlipped = flip; \
+const static int PixelIsPreMultiplied = pre; \
 END_IPLUG_NAMESPACE \
 END_IGRAPHICS_NAMESPACE
 
 #ifdef IGRAPHICS_AGG
   #include "IGraphicsAGG_src.h"
-  #define BITMAP_DATA_TYPE agg::pixel_map*
   BEGIN_IPLUG_NAMESPACE
   BEGIN_IGRAPHICS_NAMESPACE
-  #ifdef OS_WIN
+  #if defined OS_WIN
   using AGGColorOrder = agg::order_bgra;
   #elif defined OS_MAC
   using AGGColorOrder = agg::order_argb;
   #endif
   END_IPLUG_NAMESPACE
   END_IGRAPHICS_NAMESPACE
-  BITMAP_COLOR_ORDER(AGGColorOrder().R, AGGColorOrder().G, AGGColorOrder().B, AGGColorOrder().A);
+  BITMAP_OPTIONS(agg::pixel_map*, AGGColorOrder().R, AGGColorOrder().G, AGGColorOrder().B, AGGColorOrder().A, false);
 #elif defined IGRAPHICS_CAIRO
   #if defined OS_MAC || defined OS_LINUX
     #include "cairo/cairo.h"
@@ -67,11 +69,9 @@ END_IGRAPHICS_NAMESPACE
   #else
     #error NOT IMPLEMENTED
   #endif
-  BITMAP_COLOR_ORDER(2, 1, 0, 3)
-  #define BITMAP_DATA_TYPE cairo_surface_t*
+  BITMAP_OPTIONS(cairo_surface_t*, 2, 1, 0, 3, true)
 #elif defined IGRAPHICS_NANOVG
-  #define BITMAP_DATA_TYPE int;
-  BITMAP_COLOR_ORDER(0, 1, 2, 3)
+  BITMAP_OPTIONS(int 0, 1, 2, 3, false)
 #elif defined IGRAPHICS_SKIA
   #include "SkImage.h"
   #include "SkSurface.h"
@@ -81,19 +81,16 @@ END_IGRAPHICS_NAMESPACE
     sk_sp<SkImage> mImage;
     sk_sp<SkSurface> mSurface;
   };
-  BITMAP_COLOR_ORDER(0, 1, 2, 3)
-  #define BITMAP_DATA_TYPE SkiaDrawable*
+  BITMAP_OPTIONS(SkiaDrawable*, 0, 1, 2, 3, false)
 #elif defined IGRAPHICS_LICE
   #include "lice.h"
-  #define BITMAP_DATA_TYPE LICE_IBitmap*
-  BITMAP_COLOR_ORDER(LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B, LICE_PIXEL_A)
+  BITMAP_OPTIONS(LICE_IBitmap*, LICE_PIXEL_R, LICE_PIXEL_G, LICE_PIXEL_B, LICE_PIXEL_A, false)
 #elif defined IGRAPHICS_CANVAS
   #include <emscripten.h>
   #include <emscripten/val.h>
-  BITMAP_COLOR_ORDER(0, 1, 2, 3)
-  #define BITMAP_DATA_TYPE emscripten::val*
+  BITMAP_OPTIONS(emscripten::val*, 0, 1, 2, 3, false)
 #else // NO_IGRAPHICS
-  #define BITMAP_DATA_TYPE void*;
+  BITMAP_OPTIONS(void*, 0, 1, 2, 3, false)
 #endif
 
 #if defined OS_MAC || defined OS_IOS
@@ -110,7 +107,6 @@ END_IGRAPHICS_NAMESPACE
 
 BEGIN_IPLUG_NAMESPACE
 BEGIN_IGRAPHICS_NAMESPACE
-using BitmapData = BITMAP_DATA_TYPE;
 using FontDescriptor = FONT_DESCRIPTOR_TYPE;
 using RawBitmapData = WDL_TypedBuf<uint8_t>;
 
