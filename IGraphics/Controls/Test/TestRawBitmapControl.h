@@ -65,7 +65,7 @@ public:
     for (int i = 0; i < transientBitmap.W(); i++)
     {
       for (int j = 0; j < transientBitmap.H(); j++)
-        transientBitmap.SetPixel(i, j, IColor(128, 255, 0, 0));
+        transientBitmap.SetPixel(i, j, IColor(50, 255, 0, 0));
     }
       
     g.DrawRawBitmap(transientBitmap, rect1);
