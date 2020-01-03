@@ -496,7 +496,7 @@ APIBitmap* IGraphicsAGG::RawBitmapToAPIBitmap(const IRawBitmap& raw)
   return new Bitmap(pBitmap, GetScreenScale(), GetDrawScale(), false);
 }
 
-void IGraphicsAGG::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
+void IGraphicsAGG::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();

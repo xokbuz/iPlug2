@@ -64,7 +64,7 @@ protected:
   bool AssetsLoaded() override;
 
   APIBitmap* RawBitmapToAPIBitmap(const IRawBitmap& raw) override;
-  void APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly) override;
+  void APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly) override;
   void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
   void DoMeasureText(const IText& text, const char* str, IRECT& bounds) const override;

@@ -495,7 +495,7 @@ APIBitmap* IGraphicsCanvas::RawBitmapToAPIBitmap(const IRawBitmap& raw)
   return pBitmap;
 }
 
-void IGraphicsCanvas::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
+void IGraphicsCanvas::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();

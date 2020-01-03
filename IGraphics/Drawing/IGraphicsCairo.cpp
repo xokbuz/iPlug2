@@ -249,7 +249,7 @@ cairo_surface_t* CreateSurfaceFromDataScaled(IRawBitmap& raw, const APIBitmap *p
   return pSurface;
 }
 
-void IGraphicsCairo::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
+void IGraphicsCairo::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();

@@ -1725,7 +1725,7 @@ void IGraphics::ApplyLayerDropShadow(ILayerPtr& layer, const IShadow& shadow)
   RawBitmapData kernel;
     
   // Get bitmap in 32-bit form
-  APIBitmapToRawBitmap(layer->GetAPIBitmap(), temp1, true);
+  APIBitmapToRawBitmap(temp1, layer->GetAPIBitmap(), true);
     
   if (!temp1.mData.GetSize())
       return;

@@ -493,7 +493,7 @@ public:
    * @param style A font style
    * @return \c true on success */
   bool LoadFont(const char* fontID, const char* fontName, ETextStyle style);
-
+  
 #pragma mark - Layer management
   
   /** /todo 
@@ -544,7 +544,7 @@ public:
   /** /todo
    * @param layer /todo
    * @param data /todo */
-  virtual void APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly) = 0;
+  virtual void APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly) = 0;
   
   /** /todo
    * @param layer /todo
@@ -1427,6 +1427,11 @@ public:
     raw.mData.Resize((width * 4 + align) * height);
     raw.mW = width;
     raw.mH = height;
+  }
+  
+  void BitmapToRawBitmap(IRawBitmap& raw, const IBitmap& bitmap)
+  {
+    APIBitmapToRawBitmap(raw, bitmap.GetAPIBitmap(), false);
   }
     
 protected:

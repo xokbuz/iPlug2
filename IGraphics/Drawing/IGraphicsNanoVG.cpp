@@ -357,7 +357,7 @@ APIBitmap* IGraphicsNanoVG::RawBitmapToAPIBitmap(const IRawBitmap& raw)
   return new Bitmap(this, mVG, raw.W(), raw.H(), raw.Get(), GetScreenScale(), GetDrawScale());
 }
 
-void IGraphicsNanoVG::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
+void IGraphicsNanoVG::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
@@ -374,6 +374,9 @@ void IGraphicsNanoVG::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap&
     nvgBeginFrame(mVG, width, height, 1.0);
     nvgReadPixels(mVG, pBitmap->GetBitmap(), 0, 0, width, height, raw.Get());
     UpdateLayer();
+      
+    if (!alphaOnly)
+      raw.UnPremultiply();
   }
 }
 

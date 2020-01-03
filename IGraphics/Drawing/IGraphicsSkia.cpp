@@ -694,7 +694,7 @@ APIBitmap* IGraphicsSkia::RawBitmapToAPIBitmap(const IRawBitmap& raw)
   return new Bitmap(image, GetScreenScale(), GetDrawScale());
 }
 
-void IGraphicsSkia::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
+void IGraphicsSkia::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly)
 {
   SkiaDrawable* pDrawable = pBitmap->GetBitmap();
   int width = pBitmap->GetWidth();

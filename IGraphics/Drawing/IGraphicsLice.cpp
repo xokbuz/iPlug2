@@ -842,7 +842,7 @@ APIBitmap* IGraphicsLice::RawBitmapToAPIBitmap(const IRawBitmap& raw)
   return new Bitmap(pBitmap, GetScreenScale(), false);
 }
 
-void IGraphicsLice::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
+void IGraphicsLice::APIBitmapToRawBitmap(IRawBitmap& raw, const APIBitmap *pBitmap, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
