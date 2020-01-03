@@ -65,8 +65,8 @@ public:
 protected:
   APIBitmap* CreateAPIBitmap(int width, int height, int scale, double drawScale) override;
 
-  APIBitmap* GetAPIBitmapFromData(const IRawBitmap& bitmap) override;
-  void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) override;
+  APIBitmap* RawBitmapToAPIBitmap(const IRawBitmap& raw) override;
+  void APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly) override;
   void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
   void UpdateLayer() override;

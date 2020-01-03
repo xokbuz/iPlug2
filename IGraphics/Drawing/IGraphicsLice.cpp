@@ -27,7 +27,7 @@ public:
   : APIBitmap(pBitmap, pBitmap->getWidth(), pBitmap->getHeight(), scale, 1.f), mPremultiplied(preMultiplied)
   {}
   virtual ~Bitmap() { delete GetBitmap(); }
-  bool IsPreMultiplied() { return mPremultiplied; }
+  bool IsPreMultiplied() const { return mPremultiplied; }
 private:
   bool mPremultiplied;
 };
@@ -835,30 +835,33 @@ APIBitmap* IGraphicsLice::CreateAPIBitmap(int width, int height, int scale, doub
   return new Bitmap(pBitmap, scale, true);
 }
 
-APIBitmap* IGraphicsLice::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+APIBitmap* IGraphicsLice::RawBitmapToAPIBitmap(const IRawBitmap& raw)
 {
-  LICE_IBitmap* pBitmap = new LICE_WrapperBitmap((LICE_pixel *)bitmap.Get(), bitmap.W(), bitmap.H(), bitmap.RowSpan() / 4, false);
+  LICE_IBitmap* pBitmap = new LICE_WrapperBitmap((LICE_pixel *)raw.Get(), raw.W(), raw.H(), raw.RowBytes() / 4, false);
     
   return new Bitmap(pBitmap, GetScreenScale(), false);
 }
 
-void IGraphicsLice::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
+void IGraphicsLice::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
 
-  CreateRawBitmap(rawBitmap, width, height);
+  CreateRawBitmap(raw, width, height);
     
-  if (rawBitmap.W() == width && rawBitmap.H() == height)
+  if (raw.W() == width && raw.H() == height)
   {
     const uint8_t* pDataI = reinterpret_cast<const uint8_t *>(pBitmap->GetBitmap()->getBits());
-    uint8_t* pDataO = rawBitmap.Get();
+    uint8_t* pDataO = raw.Get();
       
     int rowBytesI = pBitmap->GetBitmap()->getRowSpan() * 4;
-    int rowBytesO = rawBitmap.RowSpan();
+    int rowBytesO = raw.RowBytes();
 
     for (int i = 0; i < height; i++, pDataI += rowBytesI, pDataO += rowBytesO)
       memcpy(pDataO, pDataI, width * 4);
+    
+    if (!alphaOnly && dynamic_cast<const Bitmap*>(pBitmap)->IsPreMultiplied())
+      raw.UnPremultiply();
   }
 }
 
@@ -869,7 +872,7 @@ void IGraphicsLice::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IS
 
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int strideI = mask.RowSpan();
+  int strideI = mask.RowBytes();
   int strideO = pLayerBitmap->getRowSpan() * 4;
 
   if (mask.W() == width && mask.H() == height)

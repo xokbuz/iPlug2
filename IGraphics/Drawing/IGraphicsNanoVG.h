@@ -116,8 +116,8 @@ protected:
 
   bool LoadAPIFont(const char* fontID, const PlatformFontPtr& font) override;
 
-  APIBitmap* GetAPIBitmapFromData(const IRawBitmap& bitmap) override;
-  void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) override;
+  APIBitmap* RawBitmapToAPIBitmap(const IRawBitmap& raw) override;
+  void APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly) override;
   void ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const IShadow& shadow) override;
 
   void DoMeasureText(const IText& text, const char* str, IRECT& bounds) const override;

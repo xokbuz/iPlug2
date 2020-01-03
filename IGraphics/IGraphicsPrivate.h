@@ -44,7 +44,6 @@ const static int ColorOrderR = r; \
 const static int ColorOrderG = g; \
 const static int ColorOrderB = b; \
 const static int ColorOrderA = a; \
-const static int PixelGetIsFlipped = flip; \
 const static int PixelIsPreMultiplied = pre; \
 END_IPLUG_NAMESPACE \
 END_IGRAPHICS_NAMESPACE
@@ -71,7 +70,7 @@ END_IGRAPHICS_NAMESPACE
   #endif
   BITMAP_OPTIONS(cairo_surface_t*, 2, 1, 0, 3, true)
 #elif defined IGRAPHICS_NANOVG
-  BITMAP_OPTIONS(int 0, 1, 2, 3, false)
+  BITMAP_OPTIONS(int, 0, 1, 2, 3, false)
 #elif defined IGRAPHICS_SKIA
   #include "SkImage.h"
   #include "SkSurface.h"

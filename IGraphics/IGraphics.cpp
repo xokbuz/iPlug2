@@ -496,16 +496,16 @@ void IGraphics::DrawBitmap(const IBitmap& bitmap, const IRECT& bounds, int bmpSt
   return DrawBitmap(bitmap, bounds, srcX, srcY, pBlend);
 }
 
-void IGraphics::DrawRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend)
+void IGraphics::DrawRawBitmap(const IRawBitmap& raw, const IRECT& bounds, const IBlend* pBlend)
 {
-    std::unique_ptr<APIBitmap> pBitmap(GetAPIBitmapFromData(bitmap));
+    std::unique_ptr<APIBitmap> pBitmap(RawBitmapToAPIBitmap(raw));
     IBitmap tempBitmap(pBitmap.get(), 1, false);
     DrawBitmap(tempBitmap, bounds, 1, pBlend);
 }
 
-void IGraphics::DrawFittedRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend)
+void IGraphics::DrawFittedRawBitmap(const IRawBitmap& raw, const IRECT& bounds, const IBlend* pBlend)
 {
-    std::unique_ptr<APIBitmap> pBitmap(GetAPIBitmapFromData(bitmap));
+    std::unique_ptr<APIBitmap> pBitmap(RawBitmapToAPIBitmap(raw));
     IBitmap tempBitmap(pBitmap.get(), 1, false);
     DrawFittedBitmap(tempBitmap, bounds, pBlend);
 }
@@ -1725,7 +1725,7 @@ void IGraphics::ApplyLayerDropShadow(ILayerPtr& layer, const IShadow& shadow)
   RawBitmapData kernel;
     
   // Get bitmap in 32-bit form
-  GetAPIBitmapData(layer->GetAPIBitmap(), temp1);
+  APIBitmapToRawBitmap(layer->GetAPIBitmap(), temp1, true);
     
   if (!temp1.mData.GetSize())
       return;

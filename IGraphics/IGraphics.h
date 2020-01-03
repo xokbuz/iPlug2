@@ -395,16 +395,16 @@ public:
   void DrawBitmap(const IBitmap& bitmap, const IRECT& bounds, int frame = 1, const IBlend* pBlend = 0);
 
   /** Draws a raw bitmap into the graphics context. NOTE: this helper method handles multi-frame bitmaps, indexable via frame
-   * @param bitmap - the raw bitmap to draw
+   * @param raw - the raw bitmap to draw
    * @param bounds - where to draw the bitmap
    * @param pBlend - blend operation */
-  void DrawRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend = 0);
+  void DrawRawBitmap(const IRawBitmap& raw, const IRECT& bounds, const IBlend* pBlend = 0);
   
   /** Draw a raw bitmap image to the graphics context, scaling the image to fit the bounds
-   * @param bitmap The raw bitmap image to draw to the graphics context
+   * @param raw The raw bitmap image to draw to the graphics context
    * @param bounds The rectangular region to draw the image in
    * @param pBlend Optional blend method, see IBlend documentation */
-  void DrawFittedRawBitmap(const IRawBitmap& bitmap, const IRECT& bounds, const IBlend* pBlend = 0);
+  void DrawFittedRawBitmap(const IRawBitmap& raw, const IRECT& bounds, const IBlend* pBlend = 0);
   
   /** Draws mono spaced bitmap text. Useful for identical looking text on multiple platforms.
    * @param bitmap the bitmap containing glyphs to draw
@@ -539,12 +539,12 @@ public:
 
   virtual int RowBytesForWidth(int width) { return width * 4; }
   
-  virtual APIBitmap* GetAPIBitmapFromData(const IRawBitmap& rawBitmap) = 0;
+  virtual APIBitmap* RawBitmapToAPIBitmap(const IRawBitmap& raw) = 0;
 
   /** /todo
    * @param layer /todo
    * @param data /todo */
-  virtual void GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap) = 0;
+  virtual void APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly) = 0;
   
   /** /todo
    * @param layer /todo
@@ -1420,13 +1420,13 @@ public:
    * @return An ISVG representing the image */
   virtual ISVG LoadSVG(const char* fileNameOrResID, const char* units = "px", float dpi = 72.f);
   
-  void CreateRawBitmap(IRawBitmap& bitmap, int width, int height)
+  void CreateRawBitmap(IRawBitmap& raw, int width, int height)
   {
     int align = RowBytesForWidth(width) - width * 4;
     
-    bitmap.mData.Resize((width * 4 + align) * height);
-    bitmap.mW = width;
-    bitmap.mH = height;
+    raw.mData.Resize((width * 4 + align) * height);
+    raw.mW = width;
+    raw.mH = height;
   }
     
 protected:

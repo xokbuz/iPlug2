@@ -479,15 +479,15 @@ bool IGraphicsCanvas::AssetsLoaded()
   return true;
 }
 
-APIBitmap* IGraphicsCanvas::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+APIBitmap* IGraphicsCanvas::RawBitmapToAPIBitmap(const IRawBitmap& raw)
 {
-  APIBitmap* pBitmap = CreateAPIBitmap(bitmap.W(), bitmap.H(), GetScreenScale(), GetDrawScale());
+  APIBitmap* pBitmap = CreateAPIBitmap(raw.W(), raw.H(), GetScreenScale(), GetDrawScale());
     
-  size_t size = bitmap.W() * bitmap.H() * 4;
+  size_t size = raw.W() * raw.H() * 4;
   val context = pBitmap->GetBitmap()->call<val>("getContext", std::string("2d"));
-  val pixelDataO = val::global("Uint8ClampedArray").new_(bitmap.W() * bitmap.H() * 4);
-  val pixelDataI = val(typed_memory_view(size, bitmap.Get()));
-  val imageData = val::global("ImageData").new_(pixelDataO, bitmap.W(), bitmap.H());
+  val pixelDataO = val::global("Uint8ClampedArray").new_(raw.W() * raw.H() * 4);
+  val pixelDataI = val(typed_memory_view(size, raw.Get()));
+  val imageData = val::global("ImageData").new_(pixelDataO, raw.W(), raw.H());
 
   pixelDataO.call<void>("set", pixelDataI);
   context.call<void>("putImageData", imageData, 0, 0);
@@ -495,7 +495,7 @@ APIBitmap* IGraphicsCanvas::GetAPIBitmapFromData(const IRawBitmap& bitmap)
   return pBitmap;
 }
 
-void IGraphicsCanvas::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
+void IGraphicsCanvas::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
@@ -504,12 +504,12 @@ void IGraphicsCanvas::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& raw
   val imageData = context.call<val>("getImageData", 0, 0, width, height);
   val pixelData = imageData["data"];
  
-  CreateRawBitmap(rawBitmap, width, height);
+  CreateRawBitmap(raw, width, height);
   
   // Copy pixels from context
-  if (rawBitmap.W() == width && rawBitmap.H() == height)
+  if (raw.W() == width && raw.H() == height)
   {
-    unsigned char* out = rawBitmap.Get();
+    unsigned char* out = raw.Get();
     
     for (auto i = 0; i < size; i++)
       out[i] = pixelData[i].as<unsigned char>();

@@ -225,23 +225,23 @@ int IGraphicsCairo::RowBytesForWidth(int width)
   return cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 }
 
-cairo_surface_t* CreateSurfaceFromData(const IRawBitmap& bitmap)
+cairo_surface_t* CreateSurfaceFromData(const IRawBitmap& raw)
 {
   cairo_format_t format = CAIRO_FORMAT_ARGB32;
-  int stride = cairo_format_stride_for_width(format, bitmap.W());
+  int stride = cairo_format_stride_for_width(format, raw.W());
 
-  return cairo_image_surface_create_for_data((unsigned char*) bitmap.Get(), format, bitmap.W(), bitmap.H(), stride);
+  return cairo_image_surface_create_for_data((unsigned char*) raw.Get(), format, raw.W(), raw.H(), stride);
 }
 
-APIBitmap* IGraphicsCairo::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+APIBitmap* IGraphicsCairo::RawBitmapToAPIBitmap(const IRawBitmap& raw)
 {
-  return new Bitmap(CreateSurfaceFromData(bitmap), GetScreenScale(), GetDrawScale());
+  return new Bitmap(CreateSurfaceFromData(raw), GetScreenScale(), GetDrawScale());
 }
 
-cairo_surface_t* CreateSurfaceFromDataScaled(IRawBitmap& bitmap, const APIBitmap *pBitmapI)
+cairo_surface_t* CreateSurfaceFromDataScaled(IRawBitmap& raw, const APIBitmap *pBitmapI)
 {
   double x, y;
-  cairo_surface_t* pSurface = CreateSurfaceFromData(bitmap);
+  cairo_surface_t* pSurface = CreateSurfaceFromData(raw);
 
   cairo_surface_get_device_scale(pBitmapI->GetBitmap(), &x, &y);
   cairo_surface_set_device_scale(pSurface, x, y);
@@ -249,19 +249,19 @@ cairo_surface_t* CreateSurfaceFromDataScaled(IRawBitmap& bitmap, const APIBitmap
   return pSurface;
 }
 
-void IGraphicsCairo::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
+void IGraphicsCairo::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
 
-  CreateRawBitmap(rawBitmap, width, height);
+  CreateRawBitmap(raw, width, height);
     
-  if (rawBitmap.W() != width && rawBitmap.H() != height)
+  if (raw.W() != width && raw.H() != height)
     return;
 
-  memset(rawBitmap.Get(), 0, rawBitmap.RowSpan() * rawBitmap.H());
+  memset(raw.Get(), 0, raw.RowBytes() * raw.H());
 
-  cairo_surface_t* pSurface = CreateSurfaceFromDataScaled(rawBitmap, pBitmap);
+  cairo_surface_t* pSurface = CreateSurfaceFromDataScaled(raw, pBitmap);
   
   if (pSurface)
   {

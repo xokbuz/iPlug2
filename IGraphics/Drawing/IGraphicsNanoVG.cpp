@@ -352,19 +352,19 @@ APIBitmap* IGraphicsNanoVG::CreateAPIBitmap(int width, int height, int scale, do
   return pAPIBitmap;
 }
 
-APIBitmap* IGraphicsNanoVG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+APIBitmap* IGraphicsNanoVG::RawBitmapToAPIBitmap(const IRawBitmap& raw)
 {
-  return new Bitmap(this, mVG, bitmap.W(), bitmap.H(), bitmap.Get(), GetScreenScale(), GetDrawScale());
+  return new Bitmap(this, mVG, raw.W(), raw.H(), raw.Get(), GetScreenScale(), GetDrawScale());
 }
 
-void IGraphicsNanoVG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
+void IGraphicsNanoVG::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
   
-  CreateRawBitmap(rawBitmap, width, height);
+  CreateRawBitmap(raw, width, height);
 
-  if (rawBitmap.W() == width && rawBitmap.H() == height)
+  if (raw.W() == width && raw.H() == height)
   {
     nvgEndFrame(mVG);
 #ifdef IGRAPHICS_GL
@@ -372,7 +372,7 @@ void IGraphicsNanoVG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& raw
 #endif
     nvgBindFramebuffer(dynamic_cast<const Bitmap*>(pBitmap)->GetFBO());
     nvgBeginFrame(mVG, width, height, 1.0);
-    nvgReadPixels(mVG, pBitmap->GetBitmap(), 0, 0, width, height, rawBitmap.Get());
+    nvgReadPixels(mVG, pBitmap->GetBitmap(), 0, 0, width, height, raw.Get());
     UpdateLayer();
   }
 }

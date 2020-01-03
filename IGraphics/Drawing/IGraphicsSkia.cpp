@@ -686,26 +686,32 @@ void IGraphicsSkia::UpdateLayer()
   mCanvas = mLayers.empty() ? mSurface->getCanvas() : mLayers.top()->GetAPIBitmap()->GetBitmap()->mSurface->getCanvas();
 }
 
-APIBitmap* IGraphicsSkia::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+APIBitmap* IGraphicsSkia::RawBitmapToAPIBitmap(const IRawBitmap& raw)
 {
-  SkImageInfo info = SkImageInfo::MakeN32(bitmap.W(), bitmap.H(), kUnpremul_SkAlphaType);
-  SkPixmap pixmap(info, bitmap.Get(), bitmap.RowSpan());
+  SkImageInfo info = SkImageInfo::MakeN32(raw.W(), raw.H(), kUnpremul_SkAlphaType);
+  SkPixmap pixmap(info, raw.Get(), raw.RowBytes());
   sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
   return new Bitmap(image, GetScreenScale(), GetDrawScale());
 }
 
-void IGraphicsSkia::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
+void IGraphicsSkia::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
 {
   SkiaDrawable* pDrawable = pBitmap->GetBitmap();
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
 
-  CreateRawBitmap(rawBitmap, width, height);
+  CreateRawBitmap(raw, width, height);
    
-  if (rawBitmap.W() == width && rawBitmap.H() == height)
+  if (raw.W() == width && raw.H() == height)
   {
-    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-    pDrawable->mSurface->readPixels(info, rawBitmap.Get(), RowBytesForWidth(width), 0, 0);
+    SkImageInfo info;
+    
+    if (alphaOnly)
+      info = SkImageInfo::MakeN32Premul(width, height);
+    else
+      info = SkImageInfo::MakeS32(width, height, kUnpremul_SkAlphaType);
+      
+    pDrawable->mSurface->readPixels(info, raw.Get(), RowBytesForWidth(width), 0, 0);
   }
 }
 

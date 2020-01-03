@@ -274,7 +274,7 @@ void IGraphicsAGG::DrawBitmap(const IBitmap& bitmap, const IRECT& dest, int srcX
   IRECT bounds = mClipRECT.Empty() ? dest : mClipRECT.Intersect(dest);
   bounds.Scale(GetBackingPixelScale());
 
-  APIBitmap* pAPIBitmap = dynamic_cast<Bitmap*>(bitmap.GetAPIBitmap());
+  APIBitmap* pAPIBitmap = bitmap.GetAPIBitmap();
   agg::pixel_map* pSource = pAPIBitmap->GetBitmap();
   agg::rendering_buffer src(pSource->buf(), pSource->width(), pSource->height(), pSource->row_bytes());
 
@@ -489,30 +489,33 @@ bool IGraphicsAGG::BitmapExtSupported(const char* ext)
   return (strstr(extLower, "png") != nullptr) /*|| (strstr(extLower, "jpg") != nullptr) || (strstr(extLower, "jpeg") != nullptr)*/;
 }
 
-APIBitmap* IGraphicsAGG::GetAPIBitmapFromData(const IRawBitmap& bitmap)
+APIBitmap* IGraphicsAGG::RawBitmapToAPIBitmap(const IRawBitmap& raw)
 {
-  agg::pixel_map* pBitmap = new agg::pixel_wrapper((unsigned char*)bitmap.Get(), bitmap.W(), bitmap.H(), 32, bitmap.RowSpan());
+  agg::pixel_map* pBitmap = new agg::pixel_wrapper((unsigned char*)raw.Get(), raw.W(), raw.H(), 32, raw.RowBytes());
     
   return new Bitmap(pBitmap, GetScreenScale(), GetDrawScale(), false);
 }
 
-void IGraphicsAGG::GetAPIBitmapData(const APIBitmap *pBitmap, IRawBitmap& rawBitmap)
+void IGraphicsAGG::APIBitmapToRawBitmap(const APIBitmap *pBitmap, IRawBitmap& raw, bool alphaOnly)
 {
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
     
-  CreateRawBitmap(rawBitmap, width, height);
+  CreateRawBitmap(raw, width, height);
     
-  if (rawBitmap.W() == width && rawBitmap.H() == height)
+  if (raw.W() == width && raw.H() == height)
   {
     const uint8_t* pDataI = pBitmap->GetBitmap()->buf();
-    uint8_t* pDataO = rawBitmap.Get();
+    uint8_t* pDataO = raw.Get();
         
     int rowBytesI = pBitmap->GetBitmap()->row_bytes();
-    int rowBytesO = rawBitmap.RowSpan();
+    int rowBytesO = raw.RowBytes();
       
     for (int i = 0; i < height; i++, pDataI += rowBytesI, pDataO += rowBytesO)
       memcpy(pDataO, pDataI, width * 4);
+      
+    if (!alphaOnly && dynamic_cast<const Bitmap*>(pBitmap)->IsPreMultiplied())
+      raw.UnPremultiply();
   }
 }
 
@@ -530,7 +533,7 @@ void IGraphicsAGG::ApplyShadowMask(ILayerPtr& layer, IRawBitmap& mask, const ISh
     // N.B. shadowLayer owns shadowBitmap and will delete it
 
     IRECT bounds(layer->Bounds());
-    APIBitmap* shadowBitmap = GetAPIBitmapFromData(mask);
+    APIBitmap* shadowBitmap = RawBitmapToAPIBitmap(mask);
     IBitmap bitmap(shadowBitmap, 1, false);
     ILayer shadowLayer(shadowBitmap, layer->Bounds(), nullptr, IRECT());
       

@@ -452,12 +452,12 @@ public:
   
   IColor GetPixel(int x, int y) const
   {
-    const uint8_t *pixels = GetPixels(x, y);
+    const uint8_t *pixel = PixelPtr(x, y);
     
-    int A = pixels[ColorOrderA];
-    int R = pixels[ColorOrderR];
-    int G = pixels[ColorOrderG];
-    int B = pixels[ColorOrderB];
+    int A = pixel[ColorOrderA];
+    int R = pixel[ColorOrderR];
+    int G = pixel[ColorOrderG];
+    int B = pixel[ColorOrderB];
       
     if (PixelIsPreMultiplied && (A != 0) && (A != 255))
     {
@@ -476,45 +476,55 @@ public:
   
   void SetPixel(int x, int y, IColor color)
   {
-    uint8_t *pixels = GetPixels(x, y);
+    uint8_t *pixel = PixelPtr(x, y);
     
     color.Clamp();
     
     if (PixelIsPreMultiplied)
     {
       int A = color.A;
-      pixels[ColorOrderA] = A;
-      pixels[ColorOrderR] = chanMul(color.R, A);
-      pixels[ColorOrderG] = chanMul(color.G, A);
-      pixels[ColorOrderB] = chanMul(color.B, A);
+      pixel[ColorOrderA] = A;
+      pixel[ColorOrderR] = chanMul(color.R, A);
+      pixel[ColorOrderG] = chanMul(color.G, A);
+      pixel[ColorOrderB] = chanMul(color.B, A);
     }
     else
     {
-      pixels[ColorOrderA] = color.A;
-      pixels[ColorOrderR] = color.R;
-      pixels[ColorOrderG] = color.G;
-      pixels[ColorOrderB] = color.B;
+      pixel[ColorOrderA] = color.A;
+      pixel[ColorOrderR] = color.R;
+      pixel[ColorOrderG] = color.G;
+      pixel[ColorOrderB] = color.B;
+    }
+  }
+  
+  void UnPremultiply()
+  {
+    for (int x = 0; x < mW; x++)
+    {
+      for (int y = 0; y < mH; y++)
+      {
+        uint8_t* pixel = PixelPtr(x, y);
+        
+        int A = pixel[ColorOrderA];
+        
+        if (A != 0 && A!= 255)
+        {
+          pixel[ColorOrderR] = chanDiv(pixel[ColorOrderR], A);
+          pixel[ColorOrderG] = chanDiv(pixel[ColorOrderG], A);
+          pixel[ColorOrderB] = chanDiv(pixel[ColorOrderB], A);
+        }
+      }
     }
   }
   
   bool Flipped() const { return mFlipped; }
-  int RowSpan() const { return mData.GetSize() / mH; }
+  int RowBytes() const { return mData.GetSize() / mH; }
   int W() const { return mW; }
   int H() const { return mH; }
   
   uint8_t *Get() { return mData.Get(); }
   const uint8_t *Get() const { return mData.Get(); }
-    
-  uint8_t *GetPixels(int x, int y)
-  {
-    return mData.Get() + x * 4 + y * RowSpan();
-  }
-    
-  const uint8_t *GetPixels(int x, int y) const
-  {
-    return mData.Get() + x * 4 + y * RowSpan();
-  }
-    
+  
 private:
     
   static int chanMul(int c, int a)
@@ -527,7 +537,17 @@ private:
   {
     return ((c * 0xFF) + (a >> 1)) / a;
   }
-    
+  
+  uint8_t *PixelPtr(int x, int y)
+  {
+    return mData.Get() + x * 4 + y * RowBytes();
+  }
+  
+  const uint8_t *PixelPtr(int x, int y) const
+  {
+    return mData.Get() + x * 4 + y * RowBytes();
+  }
+  
   bool mFlipped;
     
   /** Bitmap width (in pixels) */
