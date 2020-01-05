@@ -158,6 +158,9 @@ else
   sed -i.bak s/"MAXNOUTPUTS_PLACEHOLDER"/"$MAXNOUTPUTS"/g index.html;
 fi
 
+sed -i.bak s/'var Module ='/'\/\/var Module ='/g *.js
+
+
 rm *.bak
 
 # copy the style & WAM favicon
@@ -177,6 +180,8 @@ if [ $? -ne "0" ]; then
 fi
 
 cd $PROJECT_ROOT/build-web
+
+rm *.js
 
 # print payload
 echo payload:

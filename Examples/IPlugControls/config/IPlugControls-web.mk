@@ -12,8 +12,8 @@ SRC += $(PROJECT_ROOT)/IPlugControls.cpp
 
 WEB_CFLAGS += -DIGRAPHICS_NANOVG -DIGRAPHICS_GLES2
 
-WAM_LDFLAGS += -O3 -s EXPORT_NAME="'AudioWorkletGlobalScope.WAM.IPlugControls'" -s ASSERTIONS=0
+WAM_LDFLAGS += -O3 -s --closure 0 EXPORT_NAME="'AudioWorkletGlobalScope.WAM.IPlugControls'" -s ASSERTIONS=0
 
-WEB_LDFLAGS += -O3 -s ASSERTIONS=0
+WEB_LDFLAGS += -O3 -s ASSERTIONS=0 --closure 1 --pre-js ../build-web/imgs.js --pre-js ../build-web/imgs@2x.js --pre-js ../build-web/fonts.js --pre-js ../build-web/svgs.js
 
 WEB_LDFLAGS += $(NANOVG_LDFLAGS)

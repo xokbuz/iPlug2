@@ -6,10 +6,10 @@
     <link href="styles/style.css" rel="stylesheet" type="text/css"/>
     <script src="scripts/audioworklet.js"></script>
     <script src="scripts/websocket.js"></script>
-    <script async src="fonts.js"></script>
+    <!-- <script async src="fonts.js"></script>
     <script async src="svgs.js"></script>
     <script async src="imgs.js"></script>
-    <script async src="imgs@2x.js"></script>
+    <script async src="imgs@2x.js"></script> -->
     <script async src="scripts/NAME_PLACEHOLDER-web.js"></script>
   </head>
   <body>
@@ -35,12 +35,8 @@
         document.getElementById('buttons').style.display = 'none';
       }
 
-      function preventBehavior(e) {
-        e.preventDefault(); 
-      };
-
       document.addEventListener("keydown", function(event) { if(event.keyCode == 9) {event.preventDefault();}});
-      document.addEventListener("touchmove", preventBehavior, {passive: false});
+      document.addEventListener("touchmove", function(event) { event.preventDefault(); }, {passive: false});
 
       function toggleFullScreen() {
         if ((document.fullScreenElement && document.fullScreenElement !== null) ||
