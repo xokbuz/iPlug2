@@ -22,6 +22,17 @@
 			name = All;
 			productName = "AllOSX_32&64_intel";
 		};
+		B87FD1E62351C6F900CF7307 /* Update plists */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = B87FD1ED2351C6F900CF7307 /* Build configuration list for PBXAggregateTarget "Update plists" */;
+			buildPhases = (
+				B87FD1EE2351C71300CF7307 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "Update plists";
+			productName = PLists;
+		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
@@ -412,6 +423,62 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4FC3EFC32086C0A600BD11FA;
 			remoteInfo = VST3C;
+		};
+		B87FD1EF2351C74300CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD1F12351C76C00CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD1F32351C76E00CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD1F52351C77100CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD1F72351C77600CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD1F92351C77A00CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD1FD2351C78000CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
+		};
+		B87FD2012351C78700CF7307 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B87FD1E62351C6F900CF7307;
+			remoteInfo = PLists;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1732,6 +1799,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B87FD1F22351C76C00CF7307 /* PBXTargetDependency */,
 			);
 			name = VST2;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -1772,6 +1840,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B87FD1F62351C77100CF7307 /* PBXTargetDependency */,
 			);
 			name = AU;
 			productName = IPlugExampleAU;
@@ -1794,6 +1863,7 @@
 			);
 			dependencies = (
 				4F3EE1BB231438D000004786 /* PBXTargetDependency */,
+				B87FD2022351C78700CF7307 /* PBXTargetDependency */,
 			);
 			name = AUv3App;
 			productName = "OSXAPP_32&64_intel";
@@ -1830,6 +1900,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B87FD1F42351C76E00CF7307 /* PBXTargetDependency */,
 			);
 			name = VST3;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -1850,6 +1921,7 @@
 			);
 			dependencies = (
 				4F815998205D525600393585 /* PBXTargetDependency */,
+				B87FD1F82351C77600CF7307 /* PBXTargetDependency */,
 			);
 			name = AAX;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -1868,6 +1940,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B87FD1FE2351C78000CF7307 /* PBXTargetDependency */,
 			);
 			name = VST3C;
 			productName = "IPlugEffect-VST3Controller";
@@ -1885,6 +1958,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B87FD1F02351C74300CF7307 /* PBXTargetDependency */,
 			);
 			name = APP;
 			productName = "OSXAPP_32&64_intel";
@@ -1904,6 +1978,7 @@
 			);
 			dependencies = (
 				4FC3EFD32086C46800BD11FA /* PBXTargetDependency */,
+				B87FD1FA2351C77A00CF7307 /* PBXTargetDependency */,
 			);
 			name = VST3P;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -2011,6 +2086,7 @@
 				4FC3EFC32086C0A600BD11FA /* VST3C */,
 				4F78BE0122E73D0800AD537E /* AUv3Framework */,
 				4F3EE1BA231438D000004786 /* AUv3App */,
+				B87FD1E62351C6F900CF7307 /* Update plists */,
 			);
 		};
 /* End PBXProject section */
@@ -2113,13 +2189,9 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 			);
 			name = "Run Script - Force register AUv3";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2160,13 +2232,9 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 			);
 			name = "Run Script - Touch dummy file";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2261,6 +2329,19 @@
 			shellPath = /bin/sh;
 			shellScript = "python ../scripts/prepare_resources-mac.py";
 			showEnvVarsInLog = 0;
+		};
+		B87FD1EE2351C71300CF7307 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "python ../scripts/prepare_plists.py\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2650,6 +2731,46 @@
 			isa = PBXTargetDependency;
 			target = 4FC3EFC32086C0A600BD11FA /* VST3C */;
 			targetProxy = 4FC3EFD22086C46800BD11FA /* PBXContainerItemProxy */;
+		};
+		B87FD1F02351C74300CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1EF2351C74300CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD1F22351C76C00CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1F12351C76C00CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD1F42351C76E00CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1F32351C76E00CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD1F62351C77100CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1F52351C77100CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD1F82351C77600CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1F72351C77600CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD1FA2351C77A00CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1F92351C77A00CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD1FE2351C78000CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD1FD2351C78000CF7307 /* PBXContainerItemProxy */;
+		};
+		B87FD2022351C78700CF7307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B87FD1E62351C6F900CF7307 /* Update plists */;
+			targetProxy = B87FD2012351C78700CF7307 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -3927,6 +4048,30 @@
 			};
 			name = Tracer;
 		};
+		B87FD1E72351C6F900CF7307 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		B87FD1E82351C6F900CF7307 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		B87FD1E92351C6F900CF7307 /* Tracer */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Tracer;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4046,6 +4191,16 @@
 				4FFBB93820863B0E00DDD0E7 /* Debug */,
 				4FFBB93920863B0E00DDD0E7 /* Release */,
 				4FFBB93A20863B0E00DDD0E7 /* Tracer */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B87FD1ED2351C6F900CF7307 /* Build configuration list for PBXAggregateTarget "Update plists" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B87FD1E72351C6F900CF7307 /* Debug */,
+				B87FD1E82351C6F900CF7307 /* Release */,
+				B87FD1E92351C6F900CF7307 /* Tracer */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4FD16A0813B63081001D0217"
-               BuildableName = "IPlugEffect.app"
-               BlueprintName = "APP"
-               ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
+               BlueprintIdentifier = "B87FD2032351C90C00CF7307"
+               BuildableName = "Update plists"
+               BlueprintName = "Update plists"
+               ReferencedContainer = "container:IPlugEffect-iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,17 +29,6 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4FD16A0813B63081001D0217"
-            BuildableName = "IPlugEffect.app"
-            BlueprintName = "APP"
-            ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -50,21 +39,7 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      enableGPUFrameCaptureMode = "3"
-      enableGPUValidationMode = "1"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4FD16A0813B63081001D0217"
-            BuildableName = "IPlugEffect.app"
-            BlueprintName = "APP"
-            ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -72,16 +47,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4FD16A0813B63081001D0217"
-            BuildableName = "IPlugEffect.app"
-            BlueprintName = "APP"
-            ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
+            BlueprintIdentifier = "B87FD2032351C90C00CF7307"
+            BuildableName = "Update plists"
+            BlueprintName = "Update plists"
+            ReferencedContainer = "container:IPlugEffect-iOS.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

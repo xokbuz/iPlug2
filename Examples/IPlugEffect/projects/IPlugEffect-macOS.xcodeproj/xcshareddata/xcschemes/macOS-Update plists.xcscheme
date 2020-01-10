@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4FC3EFC32086C0A600BD11FA"
-               BuildableName = "IPlugEffectVST3Controller.a"
-               BlueprintName = "VST3C"
+               BlueprintIdentifier = "B87FD1E62351C6F900CF7307"
+               BuildableName = "Update plists"
+               BlueprintName = "Update plists"
                ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,8 +29,6 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -42,17 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4FC3EFC32086C0A600BD11FA"
-            BuildableName = "IPlugEffectVST3Controller.a"
-            BlueprintName = "VST3C"
-            ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -63,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4FC3EFC32086C0A600BD11FA"
-            BuildableName = "IPlugEffectVST3Controller.a"
-            BlueprintName = "VST3C"
+            BlueprintIdentifier = "B87FD1E62351C6F900CF7307"
+            BuildableName = "Update plists"
+            BlueprintName = "Update plists"
             ReferencedContainer = "container:IPlugEffect-macOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
