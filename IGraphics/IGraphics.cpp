@@ -116,6 +116,12 @@ void IGraphics::SetLayoutOnResize(bool layoutOnResize)
   mLayoutOnResize = layoutOnResize;
 }
 
+void IGraphics::RemoveControlWithTag(int ctrlTag)
+{
+  mControls.DeletePtr(GetControlWithTag(ctrlTag));
+  SetAllControlsDirty();
+}
+
 void IGraphics::RemoveControls(int fromIdx)
 {
   int idx = NControls()-1;
@@ -206,12 +212,13 @@ void IGraphics::AttachPanelBackground(const IPattern& color)
   mControls.Insert(0, pBG);
 }
 
-IControl* IGraphics::AttachControl(IControl* pControl, int controlTag, const char* group)
+IControl* IGraphics::AttachControl(IControl* pControl, int ctrlTag, const char* group)
 {
   pControl->SetDelegate(*GetDelegate());
-  pControl->SetTag(controlTag);
+  pControl->SetTag(ctrlTag);
   pControl->SetGroup(group);
   mControls.Add(pControl);
+  pControl->OnAttached();
   return pControl;
 }
 
@@ -272,12 +279,12 @@ void IGraphics::ShowFPSDisplay(bool enable)
   SetAllControlsDirty();
 }
 
-IControl* IGraphics::GetControlWithTag(int controlTag)
+IControl* IGraphics::GetControlWithTag(int ctrlTag)
 {
   for (auto c = 0; c < NControls(); c++)
   {
     IControl* pControl = GetControl(c);
-    if (pControl->GetTag() == controlTag)
+    if (pControl->GetTag() == ctrlTag)
     {
       return pControl;
     }
@@ -1894,6 +1901,62 @@ void IGraphics::SetQwertyMidiKeyHandlerFunc(std::function<void(const IMidiMsg& m
     
     return true;
   });
+}
+
+bool IGraphics::RespondsToGesture(float x, float y)
+{
+  IControl* pControl = GetMouseControl(x, y, false, false);
+
+  if(pControl && pControl->GetWantsGestures())
+    return true;
+  
+  if(mGestureRegions.Size() == 0)
+    return false;
+  else
+  {
+    int regionIdx = mGestureRegions.Find(x, y);
+    
+    if(regionIdx > -1)
+      return true;
+  }
+  
+  return false;
+}
+
+void IGraphics::OnGestureRecognized(const IGestureInfo& info)
+{
+  IControl* pControl = GetMouseControl(info.x, info.y, false, false);
+
+  if(pControl && pControl->GetWantsGestures())
+    pControl->OnGesture(info);
+  else
+  {
+    int regionIdx = mGestureRegions.Find(info.x, info.y);
+    
+    if(regionIdx > -1)
+      mGestureRegionFuncs.find(regionIdx)->second(nullptr, info);
+  }
+}
+
+void IGraphics::AttachGestureRecognizer(EGestureType type)
+{
+  if (std::find(std::begin(mRegisteredGestures), std::end(mRegisteredGestures), type) != std::end(mRegisteredGestures))
+  {
+    mRegisteredGestures.push_back(type);
+  }
+}
+
+void IGraphics::AttachGestureRecognizerToRegion(const IRECT& bounds, EGestureType type, IGestureFunc func)
+{
+  mGestureRegions.Add(bounds);
+  AttachGestureRecognizer(type);
+  mGestureRegionFuncs.insert(std::make_pair(mGestureRegions.Size()-1, func));
+}
+
+void IGraphics::ClearGestureRegions()
+{
+  mGestureRegions.Clear();
+  mGestureRegionFuncs.clear();
 }
 
 #ifdef IGRAPHICS_IMGUI
