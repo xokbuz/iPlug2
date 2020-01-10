@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-# this script will copy resources to the ~/Music/PLUG_NAME folder or the bundle depending on PLUG_SHARED_RESOURCES
+# this script will copy the project's resources (pngs, ttfs, svgs etc) to the correct place
+# depending on the value of PLUG_SHARED_RESOURCES in config.h
+# resources can either be copied into the plug-in bundle or into a shared path
+# since the shared path should be accesible from the mac app sandbox,
+# the path used is ~/Music/SHARED_RESOURCES_SUBPATH
 
 import os, sys, shutil
 
@@ -19,7 +23,7 @@ def main():
   print "Copying resources ..."
 
   if config['PLUG_SHARED_RESOURCES']:
-    dst = os.path.expanduser("~") + "/Music/" + config['BUNDLE_NAME'] + "/Resources"
+    dst = os.path.expanduser("~") + "/Music/" + config['SHARED_RESOURCES_SUBPATH'] + "/Resources"
   else:
     dst = os.environ["TARGET_BUILD_DIR"] + os.environ["UNLOCALIZED_RESOURCES_FOLDER_PATH"]
 

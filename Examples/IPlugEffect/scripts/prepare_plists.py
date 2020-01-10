@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# this script will create/update info plist files based on config.h a
+# this script will create/update info plist files based on config.h
 
 kAudioUnitType_MusicDevice      = "aumu"
 kAudioUnitType_MusicEffect      = "aumf"
