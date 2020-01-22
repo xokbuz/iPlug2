@@ -23,13 +23,8 @@
 
 //static RedrawProfiler _redrawProfiler;
 
-
 using namespace iplug;
 using namespace igraphics;
-
-// Direct2D provides native drawing options for many typical shapes,
-// otherwise we can fallback to IGraphicsPathBase shape construction
-#define USE_NATIVE_SHAPES
 
 #pragma mark - Private Classes and Structs
 
@@ -324,16 +319,6 @@ void IGraphicsD2D::PathQuadraticBezierTo(float cx, float cy, float x2, float y2)
   }
 }
 
-void IGraphicsD2D::RenderCheck()
-{
-  return;
-  if (!mInDraw)
-  {
-    DBGMSG("Do not access outside of mInDraw");
-  }
-}
-
-
 void IGraphicsD2D::PathStroke(const IPattern& pattern, float thickness, const IStrokeOptions& options, const IBlend* pBlend)
 {
   // close it open if necessary
@@ -344,7 +329,6 @@ void IGraphicsD2D::PathStroke(const IPattern& pattern, float thickness, const IS
     mInFigure = false;
     SafeRelease(&mPathSink);
   }
-  RenderCheck();
 
   D2D1_CAP_STYLE dashCap = D2D1_CAP_STYLE_FLAT;
   D2D1_LINE_JOIN lineJoin = D2D1_LINE_JOIN_MITER;
@@ -387,70 +371,47 @@ void IGraphicsD2D::PathFill(const IPattern& pattern, const IFillOptions& options
     mInFigure = false;
     SafeRelease(&mPathSink);
   }
-  RenderCheck();
   mD2DDeviceContext->FillGeometry(mPath, GetBrush(pattern, pBlend));
 }
 
+#ifdef IGRAPHICS_DRAWFILL_DIRECT
 void IGraphicsD2D::DrawLine(const IColor& color, float x1, float y1, float x2, float y2, const IBlend* pBlend, float thickness)
 {
-#ifdef USE_NATIVE_SHAPES
   PathClear();
-  RenderCheck();
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->DrawLine(D2D1::Point2F(x1,y1), D2D1::Point2F(x2, y2), GetBrush(color, pBlend), thickness);
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  IGraphicsPathBase::DrawLine(color, x1, y1, x2, y2, pBlend, thickness);
-#endif
 }
 
 void IGraphicsD2D::DrawRect(const IColor& color, const IRECT& bounds, const IBlend* pBlend, float thickness)
 {
-#ifdef USE_NATIVE_SHAPES
   PathClear();
-  RenderCheck();
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->DrawRectangle(D2DRect(bounds), GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  IGraphicsPathBase::DrawRect(color, bounds, pBlend, thickness);
-#endif
 }
 
 void IGraphicsD2D::DrawRoundRect(const IColor& color, const IRECT& bounds, float cornerRadius, const IBlend* pBlend, float thickness)
 {
-#ifdef USE_NATIVE_SHAPES
   PathClear();
   D2D1_ROUNDED_RECT rr;
   rr.radiusX = cornerRadius;
   rr.radiusY = cornerRadius;
   rr.rect = D2DRect(bounds);
-  RenderCheck();
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->DrawRoundedRectangle(rr, GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  IGraphicsPathBase::DrawRoundRect(color, bounds, cornerRadius, pBlend, thickness);
-#endif
 }
 
 void IGraphicsD2D::FillRect(const IColor& color, const IRECT& bounds, const IBlend* pBlend)
 {
-  RenderCheck();
-#ifdef USE_NATIVE_SHAPES
-  PathClear();
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->FillRectangle(D2DRect(bounds), GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  IGraphicsPathBase::FillRect(color, bounds, pBlend);
-#endif
 }
 
 void IGraphicsD2D::FillRoundRect(const IColor& color, const IRECT& bounds, float cornerRadius, const IBlend* pBlend)
 {
-  RenderCheck();
-#ifdef USE_NATIVE_SHAPES
   PathClear();
   D2D1_ROUNDED_RECT rr;
   rr.radiusX = cornerRadius;
@@ -459,15 +420,10 @@ void IGraphicsD2D::FillRoundRect(const IColor& color, const IRECT& bounds, float
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->FillRoundedRectangle(rr, GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  IGraphicsPathBase::FillRoundRect(color, bounds, cornerRadius, pBlend);
-#endif
 }
 
 void IGraphicsD2D::FillCircle(const IColor& color, float cx, float cy, float r, const IBlend* pBlend)
 {
-  RenderCheck();
-#ifdef USE_NATIVE_SHAPES
   PathClear();
   D2D1_ELLIPSE shape;
   shape.radiusX = r;
@@ -477,16 +433,11 @@ void IGraphicsD2D::FillCircle(const IColor& color, float cx, float cy, float r, 
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->FillEllipse(shape, GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  IGraphicsPathBase::FillCircle(color, cx, cy, r, pBlend);
-#endif
 }
 
 void IGraphicsD2D::FillEllipse(const IColor& color, const IRECT& bounds, const IBlend* pBlend)
 {
-  RenderCheck();
   // TODO: support angle do the rotation here -- we can't rotate the path on its own easily.
-#ifdef USE_NATIVE_SHAPES
   PathClear();
   D2D1_ELLIPSE shape;
   shape.radiusX = bounds.W() / 2.0f;
@@ -496,17 +447,11 @@ void IGraphicsD2D::FillEllipse(const IColor& color, const IRECT& bounds, const I
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->FillEllipse(shape, GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  // TODO: doesn't work because path ellipse is broken
-  IGraphicsPathBase::FillEllipse(color, bounds, pBlend);
-#endif
 }
 
 void IGraphicsD2D::FillEllipse(const IColor& color, float x, float y, float r1, float r2, float angle, const IBlend* pBlend)
 {
-  RenderCheck();
   // TODO: support angle do the rotation here -- we can't rotate the path on its own easily.
-#ifdef USE_NATIVE_SHAPES
   PathClear();
   D2D1_ELLIPSE shape;
   shape.radiusX = r1;
@@ -516,11 +461,9 @@ void IGraphicsD2D::FillEllipse(const IColor& color, float x, float y, float r1, 
   mD2DDeviceContext->SetPrimitiveBlend(D2DBlendMode(pBlend));
   mD2DDeviceContext->FillEllipse(shape, GetBrush(color, pBlend));
   mD2DDeviceContext->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
-#else
-  // TODO: doesn't work because path ellipse is broken
-  IGraphicsPathBase::FillEllipse(color, bounds, pBlend);
-#endif
 }
+
+#endif //IGRAPHICS_DRAWFILL_DIRECT
 
 void IGraphicsD2D::GetLayerBitmapData(const ILayerPtr& layer, RawBitmapData& data)
 {
@@ -577,7 +520,6 @@ void IGraphicsD2D::ApplyShadowMask(ILayerPtr& layer, RawBitmapData& mask, const 
 
 void IGraphicsD2D::DrawBitmap(const IBitmap& bitmap, const IRECT& dest, int srcX, int srcY, const IBlend* pBlend)
 {
-  RenderCheck();
   const IRECT dstIRECT = { dest.L, dest.T, dest.L + static_cast<float>(bitmap.FW()), dest.T + static_cast<float>(bitmap.FH()) };
   const IRECT srcIRECT = { static_cast<float>(srcX), static_cast<float>(srcY), static_cast<float>(srcX + bitmap.FW()), static_cast<float>(srcY + bitmap.FH()) };
   const D2D1_RECT_F srcRect = D2DRect(srcIRECT.GetScaled(bitmap.GetDrawScale() * bitmap.GetScale()));
@@ -675,7 +617,6 @@ void IGraphicsD2D::DoMeasureText(const IText& text, const char* str, IRECT& boun
 
 void IGraphicsD2D::DoDrawText(const IText& text, const char* str, const IRECT& bounds, const IBlend* pBlend)
 {
-  RenderCheck();
   IRECT measured = bounds;
   IDWriteTextFormat* format;
   double x, y;

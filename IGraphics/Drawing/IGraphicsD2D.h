@@ -76,6 +76,7 @@ public:
 
   bool BitmapExtSupported(const char* ext) override;
 
+#ifdef IGRAPHICS_DRAWFILL_DIRECT
   // shape drawing overrides.  IGraphics can handle the follow methods using basic path construction
   // but Direct2D provides optimized versions which will tessellate and fill much faster in certain cases.
   //void DrawRotatedBitmap(const IBitmap& bitmap, float destCtrX, float destCtrY, double angle, int yOffsetZeroDeg, const IBlend* pBlend) override;
@@ -110,6 +111,7 @@ public:
   //void PathEllipse(float x, float y, float r1, float r2, float angle = 0.0) override;
   //void PathEllipse(const IRECT& bounds) override;
   //void PathCircle(float cx, float cy, float r) override;
+#endif //IGRAPHICS_DRAWFILL_DIRECT
 
 protected:
   APIBitmap* LoadAPIBitmap(const char* fileNameOrResID, int scale, EResourceLocation location, const char* ext) override;
@@ -168,8 +170,6 @@ private:
   // For any layer there is a transform that needs to be applied
   // transparently.  We set this during updateLayer and beginFrame
   D2D1::Matrix3x2F mLayerTransform;
-
-  void RenderCheck();
 
   // the swap chain is tied to a surface of an exact size.  We need
   // to make sure all draw calls match this.
