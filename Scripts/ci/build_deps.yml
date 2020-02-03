@@ -57,21 +57,15 @@ jobs:
 
   - bash: |
       cd ./Dependencies/Build
-      rm *.log
-      rm -r tmp
-      rm -r src/skia
-      mv ./src/skia/include ./skia_include_tmp
-      mv ./src/skia/experimental/svg/model ./skia_experimental_tmp
-      mv ./src/skia/src/core ./skia_src_core_tmp
-      mv ./src/skia/src/xml ./skia_src_xml_tmp
-      mkdir -p ./src/skia
-      mkdir -p ./src/skia/experimental/svg
-      mkdir -p ./src/skia/src/
-      mv ./skia_include_tmp ./src/skia/include
-      mv ./skia_experimental_tmp ./src/skia/experimental/svg/model
-      mv ./skia_src_core_tmp ./src/skia/src/core
-      mv ./skia_src_xml_tmp ./src/skia/src/xml
+      ./../IGraphics/package-deps-src.sh
     displayName: slim SKIA src
+    condition: eq(variables.buildPlatform, 'x64')
+
+  - bash: |
+      cd ./Dependencies/Build
+      rm -r src/skia
+    displayName: remove SKIA src
+    condition: eq(variables.buildPlatform, 'Win32')
 
   - task: PublishPipelineArtifact@0
     inputs:
@@ -128,7 +122,7 @@ jobs:
   condition: and(eq(variables.build_deps, true), eq(variables.build_mac, true))
 
   pool:
-    vmImage: 'macos-10.13'
+    vmImage: 'macos-10.14'
   steps:
   - checkout: none
 
@@ -174,20 +168,7 @@ jobs:
 
   - bash: |
       cd ./Dependencies/Build
-      rm *.log
-      rm -r tmp
-      mv ./src/skia/include ./skia_include_tmp
-      mv ./src/skia/experimental/svg/model ./skia_experimental_tmp
-      mv ./src/skia/src/core ./skia_src_core_tmp
-      mv ./src/skia/src/xml ./skia_src_xml_tmp
-      rm -r src
-      mkdir -p ./src/skia
-      mkdir -p ./src/skia/experimental/svg
-      mkdir -p ./src/skia/src/
-      mv ./skia_include_tmp ./src/skia/include
-      mv ./skia_experimental_tmp ./src/skia/experimental/svg/model
-      mv ./skia_src_core_tmp ./src/skia/src/core
-      mv ./skia_src_xml_tmp ./src/skia/src/xml
+      ./../IGraphics/package-deps-src.sh
     displayName: slim SKIA src
 
   - task: PublishPipelineArtifact@0
@@ -201,7 +182,7 @@ jobs:
   condition: and(eq(variables.build_deps, true), eq(variables.build_ios, true))
 
   pool:
-    vmImage: 'macos-10.13'
+    vmImage: 'macos-10.14'
   steps:
   - checkout: none
 
@@ -214,20 +195,7 @@ jobs:
 
   - bash: |
       cd ./Dependencies/Build
-      rm *.log
-      rm -r tmp
-      mv ./src/skia/include ./skia_include_tmp
-      mv ./src/skia/experimental/svg/model ./skia_experimental_tmp
-      mv ./src/skia/src/core ./skia_src_core_tmp
-      mv ./src/skia/src/xml ./skia_src_xml_tmp
-      rm -r src
-      mkdir -p ./src/skia
-      mkdir -p ./src/skia/experimental/svg
-      mkdir -p ./src/skia/src/
-      mv ./skia_include_tmp ./src/skia/include
-      mv ./skia_experimental_tmp ./src/skia/experimental/svg/model
-      mv ./skia_src_core_tmp ./src/skia/src/core
-      mv ./skia_src_xml_tmp ./src/skia/src/xml
+      ./../IGraphics/package-deps-src.sh
     displayName: slim SKIA src
 
   - task: PublishPipelineArtifact@0
