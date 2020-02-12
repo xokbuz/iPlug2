@@ -43,10 +43,23 @@ END_IPLUG_NAMESPACE
 using namespace iplug;
 using namespace igraphics;
 
-@interface IGraphicsIOS_View : UIScrollView <UIGestureRecognizerDelegate, UITextFieldDelegate, UIScrollViewDelegate>
-{  
+@interface IGRAPHICS_UITABLEVC : UIViewController<UITableViewDataSource, UITableViewDelegate> // UITableViewController
+{
+  IPopupMenu* mMenu;
+  IGraphicsIOS* mGraphics;
+}
+@property (strong, nonatomic) UITableView* tableView;
+@property (strong, nonatomic) NSMutableArray* items;
+- (id) initWithIPopupMenuAndIGraphics: (IPopupMenu*) pMenu : (IGraphicsIOS*) pGraphics;
+
+@end
+
+@interface IGRAPHICS_VIEW : UIScrollView <UITextFieldDelegate, UIScrollViewDelegate, UIPopoverPresentationControllerDelegate, UIGestureRecognizerDelegate>
+{
 @public
   IGraphicsIOS* mGraphics;
+  IGRAPHICS_UITABLEVC* mMenuTableController;
+  UINavigationController* mMenuNavigationController;
   UITextField* mTextField;
   int mTextFieldLength;
 }
@@ -55,11 +68,13 @@ using namespace igraphics;
 - (BOOL) acceptsFirstResponder;
 - (BOOL) delaysContentTouches;
 - (void) removeFromSuperview;
-- (IPopupMenu*) createPopupMenu: (const IPopupMenu&) menu : (CGRect) bounds;
+- (IPopupMenu*) createPopupMenu: (IPopupMenu&) menu : (CGRect) bounds;
 - (void) createTextEntry: (int) paramIdx : (const IText&) text : (const char*) str : (int) length : (CGRect) areaRect;
 - (void) endUserInput;
 - (void) showMessageBox: (const char*) str : (const char*) caption : (EMsgBoxType) type : (IMsgBoxCompletionHanderFunc) completionHandler;
 - (void) getTouchXY: (CGPoint) pt x: (float*) pX y: (float*) pY;
+
+- (void)presentationControllerDidDismiss: (UIPresentationController *) presentationController;
 
 //gestures
 - (void) attachGestureRecognizer: (EGestureType) type;
