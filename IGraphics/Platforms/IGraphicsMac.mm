@@ -108,7 +108,7 @@ void* IGraphicsMac::OpenWindow(void* pParent)
   ContextReady([pView layer]);
 #endif
   
-  if (pParent) // Cocoa VST host.
+  if (pParent)
   {
     [(NSView*) pParent addSubview: (IGRAPHICS_VIEW*) mView];
   }
@@ -514,7 +514,7 @@ bool IGraphicsMac::PromptForColor(IColor& color, const char* str, IColorPickerHa
   return false;
 }
 
-IPopupMenu* IGraphicsMac::CreatePlatformPopupMenu(IPopupMenu& menu, const IRECT& bounds)
+IPopupMenu* IGraphicsMac::CreatePlatformPopupMenu(IPopupMenu& menu, const IRECT& bounds, bool& isAsync)
 {
   IPopupMenu* pReturnMenu = nullptr;
 
